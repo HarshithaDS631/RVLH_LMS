@@ -1034,22 +1034,11 @@ PAGES['student_dashboard'] = function() {
 
   // Merged two-column layout matching reference design
   var leftCol = '<div style="flex:2;min-width:0;display:flex;flex-direction:column;gap:20px">' + resumeCard + quickActions + liveSection + '</div>';
-  var rightCol = '<div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">' + sideStats + tipCard + deadlineHtml + '<div class="card"><div class="card-header"><div class="card-title">📈 Subject Performance</div><button class="card-act" onclick="loadPage(\'progress\')">Full Report</button></div>' + perfHtml + '<div class="card-header" style="margin-top:14px"><div class="card-title">💬 Recent Doubts</div><button class="card-act" onclick="loadPage(\'doubts\')">View All</button></div>' + dHtml + '</div></div>';
+  var bodyGrid = '<div style="display:flex;gap:20px;margin-top:20px;flex-wrap:wrap">' + leftCol + rightCol + '</div>';
 
-  var parentNotifyCard = '<div class="card" style="margin-top:20px;border:1px solid rgba(37,211,102,0.3);background:rgba(37,211,102,0.03)">'
-    + '<div class="card-header" style="display:flex;justify-content:space-between;align-items:center">'
-    + '<div class="card-title" style="color:#25d366">📲 Dispatch Parent Reports via WhatsApp & SMS</div>'
-    + '<span class="badge" style="background:rgba(37,211,102,0.15);color:#25d366;border:1px solid rgba(37,211,102,0.3)">Parent Phone: +91 98765 00000</span>'
-    + '</div>'
-    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px">'
-    + '<button class="btn btn-whatsapp" style="justify-content:center;padding:12px" onclick="window.openNotifyParentModal(\'Attendance\')">📲 Attendance Report</button>'
-    + '<button class="btn btn-whatsapp" style="justify-content:center;padding:12px" onclick="window.openNotifyParentModal(\'Exam Result\')">📜 Exam Rank Card</button>'
-    + '<button class="btn btn-sms" style="justify-content:center;padding:12px" onclick="window.openNotifyParentModal(\'Fee Receipt\')">💳 Fee Receipt</button>'
-    + '<button class="btn btn-whatsapp" style="justify-content:center;padding:12px" onclick="window.openNotifyParentModal(\'Leave Update\')">📝 Leave Status</button>'
-    + '</div></div>';
-
-  return welcomeBanner + upgradWidgetsHtml + leftCol + rightCol + parentNotifyCard;
+  return welcomeBanner + upgradWidgetsHtml + bodyGrid;
 };
+
 
 
 

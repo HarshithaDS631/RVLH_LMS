@@ -776,7 +776,8 @@ async function seedData() {
         });
       }
 
-      console.log('✅ Activity Audit Logs, Edchemy Parent Portal, Badges, Live Classes, Question Bank, Video Chat AI, In-Video Quizzes, upGrad Analytics, Fee Automation, P2P Doubts, SaaS Tenants & Self-Hosted Infrastructure Seeded!');
+      console.log('✅ Activity Audit Logs, Badges, Live Classes, Question Bank, Video Chat AI, In-Video Quizzes, upGrad Analytics, Fee Automation, P2P Doubts, SaaS Tenants & Self-Hosted Infrastructure Seeded!');
+
     }
   } catch (err) {
     console.error('Error seeding activity logs:', err.message);

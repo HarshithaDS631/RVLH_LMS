@@ -4,6 +4,30 @@
 const API = ''; // Proxied via Vite
 let token = localStorage.getItem('lms_token') || null;
 
+// Service Worker Registration for PWA & Mobile Store Apps
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+// Render Mobile Bottom Navigation for Store App Viewports
+window.renderMobileBottomNav = function() {
+  var existing = document.getElementById('mobile-bottom-nav');
+  if (existing) existing.remove();
+
+  var navHtml = '<div id="mobile-bottom-nav" class="mobile-bottom-nav">'
+    + '<button class="mobile-nav-btn ' + (G.page === 'dashboard' ? 'active' : '') + '" onclick="loadPage(\'dashboard\')"><span class="mobile-nav-icon">🏠</span><span>Home</span></button>'
+    + '<button class="mobile-nav-btn ' + (G.page === 'courses' ? 'active' : '') + '" onclick="loadPage(\'courses\')"><span class="mobile-nav-icon">📚</span><span>Courses</span></button>'
+    + '<button class="mobile-nav-btn ' + (G.page === 'videos' ? 'active' : '') + '" onclick="loadPage(\'videos\')"><span class="mobile-nav-icon">📹</span><span>Videos</span></button>'
+    + '<button class="mobile-nav-btn ' + (G.page === 'doubts' ? 'active' : '') + '" onclick="loadPage(\'doubts\')"><span class="mobile-nav-icon">💬</span><span>Doubts</span></button>'
+    + '<button class="mobile-nav-btn ' + (G.page === 'fees' ? 'active' : '') + '" onclick="loadPage(\'fees\')"><span class="mobile-nav-icon">💳</span><span>Fees</span></button>'
+    + '</div>';
+
+  document.body.insertAdjacentHTML('beforeend', navHtml);
+};
+
+
 window.mockTests = window.mockTests || [
   { id: 'test-1', n:'Chapter 5 — Wave Optics DPP',      type:'DPP',   batch:'JEE Adv A',   qs:20, deadline:'Mar 15', att:98,  pub:true, subject:'Physics', duration:'60 min', marksCorrect:'+4', marksWrong:'-1', startDate:'2026-03-01', endDate:'2026-03-15' },
   { id: 'test-2', n:'Weekly Test — Thermodynamics',      type:'Weekly',batch:'JEE Adv A,B', qs:30, deadline:'Mar 18', att:145, pub:true, subject:'Physics', duration:'90 min', marksCorrect:'+4', marksWrong:'-1', startDate:'2026-03-05', endDate:'2026-03-18' },
@@ -657,8 +681,10 @@ function loadPage(id, addHistory) {
     var fn = PAGES[key] || PAGES['shared_' + id];
     body.innerHTML = fn ? fn() : '<div class="empty"><div class="empty-icon">🚧</div><p>Coming soon</p></div>';
     updateBackBtn();
+    if (window.renderMobileBottomNav) window.renderMobileBottomNav();
   });
 }
+
 
 // ═══════════════════════════════════════════════════════
 // MODAL HELPERS

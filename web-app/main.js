@@ -1,7 +1,10 @@
+import './src/app.js';
+
 // ════════════════════════════════════════════════════
 // STATE & API CONFIG
 // ════════════════════════════════════════════════════
 const API = ''; // Proxied via Vite
+
 let token = localStorage.getItem('lms_token') || null;
 
 // Service Worker Registration for PWA & Mobile Store Apps

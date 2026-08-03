@@ -1,9 +1,10 @@
-import './src/app.js';
+import { initPages } from './src/app.js';
 
 // ════════════════════════════════════════════════════
 // STATE & API CONFIG
 // ════════════════════════════════════════════════════
 const API = ''; // Proxied via Vite
+
 
 let token = localStorage.getItem('lms_token') || null;
 
@@ -873,9 +874,11 @@ function doSearch(q) {
 }
 
 // ═══════════════════════════════════════════════════════
-// PAGE BUILDERS
+// PAGE BUILDERS (MODULARIZED IN src/pages/)
 // ═══════════════════════════════════════════════════════
 var PAGES = {};
+initPages(PAGES);
+
 
 // ──────────────── STUDENT DASHBOARD ────────────────
 

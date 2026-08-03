@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -36,6 +36,11 @@
           <div class="rn">Admin</div>
           <div class="rd">Control panel</div>
         </div>
+        <div class="role-card" style="--rc:#10b981" id="rc-parent">
+          <div class="ri">👨‍👩‍👧‍👦</div>
+          <div class="rn">Parent</div>
+          <div class="rd">Edchemy Portal</div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -55,9 +60,10 @@
       <button class="btn-login" id="btn-signin" style="cursor:pointer">Sign In</button>
 
       <div class="demo-btns" style="margin-top:12px">
-        <button class="demo-btn" id="demo-student">Student Demo</button>
-        <button class="demo-btn" id="demo-faculty">Faculty Demo</button>
-        <button class="demo-btn" id="demo-admin">Admin Demo</button>
+        <button class="demo-btn" id="demo-student">Student</button>
+        <button class="demo-btn" id="demo-faculty">Faculty</button>
+        <button class="demo-btn" id="demo-admin">Admin</button>
+        <button class="demo-btn" id="demo-parent" style="border-color:rgba(16,185,129,0.3);color:#10b981">Parent Demo</button>
       </div>
 
       <div style="margin-top:16px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden">
@@ -66,25 +72,31 @@
           <span id="cred-arrow" style="font-size:11px;color:var(--muted)">show</span>
         </div>
         <div id="cred-body" style="display:none;padding:12px;background:rgba(255,255,255,0.02)">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-            <div style="padding:10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:12px;border:1px solid rgba(255,255,255,0.07)">
-              <div style="color:var(--student);font-weight:700;margin-bottom:6px">Student</div>
-              <div style="color:var(--muted);margin-bottom:3px">ID: <span id="st-em" style="color:var(--text)"></span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <div style="padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:11px;border:1px solid rgba(255,255,255,0.07)">
+              <div style="color:var(--student);font-weight:700;margin-bottom:4px">Student</div>
+              <div style="color:var(--muted);margin-bottom:2px">ID: <span id="st-em" style="color:var(--text)"></span></div>
               <div style="color:var(--muted)">Pass: <span style="color:var(--text)">student123</span></div>
             </div>
-            <div style="padding:10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:12px;border:1px solid rgba(255,255,255,0.07)">
-              <div style="color:var(--faculty);font-weight:700;margin-bottom:6px">Faculty</div>
-              <div style="color:var(--muted);margin-bottom:3px">ID: <span id="fa-em" style="color:var(--text)"></span></div>
+            <div style="padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:11px;border:1px solid rgba(255,255,255,0.07)">
+              <div style="color:var(--faculty);font-weight:700;margin-bottom:4px">Faculty</div>
+              <div style="color:var(--muted);margin-bottom:2px">ID: <span id="fa-em" style="color:var(--text)"></span></div>
               <div style="color:var(--muted)">Pass: <span style="color:var(--text)">faculty123</span></div>
             </div>
-            <div style="padding:10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:12px;border:1px solid rgba(255,255,255,0.07)">
-              <div style="color:var(--admin);font-weight:700;margin-bottom:6px">Admin</div>
-              <div style="color:var(--muted);margin-bottom:3px">ID: <span id="ad-em" style="color:var(--text)"></span></div>
+            <div style="padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:11px;border:1px solid rgba(255,255,255,0.07)">
+              <div style="color:var(--admin);font-weight:700;margin-bottom:4px">Admin</div>
+              <div style="color:var(--muted);margin-bottom:2px">ID: <span id="ad-em" style="color:var(--text)"></span></div>
               <div style="color:var(--muted)">Pass: <span style="color:var(--text)">admin123</span></div>
+            </div>
+            <div style="padding:8px;background:rgba(16,185,129,0.08);border-radius:8px;font-size:11px;border:1px solid rgba(16,185,129,0.2)">
+              <div style="color:#10b981;font-weight:700;margin-bottom:4px">Parent</div>
+              <div style="color:var(--muted);margin-bottom:2px">ID: <span id="pa-em" style="color:var(--text)">parent@rvhub.com</span></div>
+              <div style="color:var(--muted)">Pass: <span style="color:var(--text)">parent123</span></div>
             </div>
           </div>
         </div>
       </div>
+
 
     </div>
   </div>

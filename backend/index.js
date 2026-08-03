@@ -3,18 +3,116 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
-dotenv.config();
+const path = require('path');
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_lms_key_123';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/rv_lms';
+
 
 app.use(cors());
 app.use(express.json());
 
 // ═══════════════════════════════════════════════════
-// IN-MEMORY DATA STORE (replaces MongoDB)
+// MONGOOSE MODELS & DATABASE CONNECTION
+// ═══════════════════════════════════════════════════
+const User = require('./models/User');
+const Course = require('./models/Course');
+const Video = require('./models/Video');
+const Doubt = require('./models/Doubt');
+const Material = require('./models/Material');
+const Announcement = require('./models/Announcement');
+const Payment = require('./models/Payment');
+const AdminActivity = require('./models/AdminActivity');
+const SuperAdminActivity = require('./models/SuperAdminActivity');
+const UserActivity = require('./models/UserActivity');
+const LeaveRequest = require('./models/LeaveRequest');
+const SiblingAdmission = require('./models/SiblingAdmission');
+const MarksCard = require('./models/MarksCard');
+const CalendarEvent = require('./models/CalendarEvent');
+const MessageLog = require('./models/MessageLog');
+const Badge = require('./models/Badge');
+const LiveClass = require('./models/LiveClass');
+const QuestionBank = require('./models/QuestionBank');
+const VideoChatLog = require('./models/VideoChatLog');
+const InVideoQuiz = require('./models/InVideoQuiz');
+const UpGradFeature = require('./models/UpGradFeature');
+const FeeAutomation = require('./models/FeeAutomation');
+const P2PDoubt = require('./models/P2PDoubt');
+const SaaSTenant = require('./models/SaaSTenant');
+const SelfHostedConfig = require('./models/SelfHostedConfig');
+
+
+
+
+
+
+
+
+
+
+
+
+
+let isMongoConnected = false;
+
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    isMongoConnected = true;
+    console.log('🍃 Connected to MongoDB successfully at:', MONGO_URI);
+  })
+  .catch((err) => {
+    isMongoConnected = false;
+    console.warn('⚠️ MongoDB connection error (using in-memory fallback):', err.message);
+  });
+
+// Central Log Activity Dispatcher Helper
+async function logActivity(user, action, opts = {}) {
+  if (!user) return;
+  try {
+    if (user.role === 'superadmin') {
+      await SuperAdminActivity.create({
+        superAdminId: user._id || 'sa_1',
+        superAdminName: user.name || 'SaaS Director',
+        email: user.email,
+        action: action,
+        tenantId: opts.tenantId,
+        tenantName: opts.tenantName,
+        details: opts.details || action
+      });
+    } else if (user.role === 'admin') {
+      await AdminActivity.create({
+        adminId: user._id || 'a_1',
+        adminName: user.name || 'System Admin',
+        email: user.email,
+        action: action,
+        targetType: opts.targetType || 'System',
+        targetName: opts.targetName || 'LMS Platform',
+        details: opts.details || action
+      });
+    } else {
+      await UserActivity.create({
+        userId: user._id || 'u_1',
+        userName: user.name || 'User',
+        email: user.email,
+        role: user.role || 'student',
+        action: action,
+        module: opts.module || 'LMS',
+        details: opts.details || action
+      });
+    }
+  } catch (err) {
+    console.error('Error recording activity log:', err.message);
+  }
+}
+
+
+// ═══════════════════════════════════════════════════
+// IN-MEMORY DATA STORE (replaces MongoDB if offline)
 // ═══════════════════════════════════════════════════
 let nextId = 1;
 const genId = () => String(nextId++);
@@ -38,6 +136,7 @@ async function seedData() {
   const hash = await bcrypt.hash('student123', salt);
   const facHash = await bcrypt.hash('faculty123', salt);
   const admHash = await bcrypt.hash('admin123', salt);
+
 
   // 1. Seed Users
   const studentSeeds = [
@@ -73,6 +172,24 @@ async function seedData() {
     campus: 'RV Learning Hub HQ',
     st: 'active'
   });
+
+  const parentHash = await bcrypt.hash('parent123', salt);
+  users.push({
+    _id: 'p1',
+    name: 'Suresh Sharma',
+    email: 'parent@rvhub.com',
+    phone: '9876500000',
+    password: parentHash,
+    role: 'parent',
+    ava: 'P',
+    children: [
+      { name: 'Arjun Sharma', roll: 'RV2024001', batch: 'JEE Advanced (Main + KCET Decoded)', campus: 'RV Jayanagar' },
+      { name: 'Sneha Patel', roll: 'RV2024002', batch: 'JEE Advanced (Main + KCET Decoded)', campus: 'RV Rajajinagar' }
+    ],
+    campus: 'RV Jayanagar',
+    st: 'active'
+  });
+
 
   studentSeeds.forEach((s, i) => {
     users.push({
@@ -275,10 +392,412 @@ async function seedData() {
     });
   });
 
+  // 10. Seed Role-Separated Activity Logs
+  try {
+    if (isMongoConnected) {
+      const adminCount = await AdminActivity.countDocuments();
+      if (adminCount === 0) {
+        await AdminActivity.insertMany([
+          { adminId: '3', adminName: 'Rahul Verma', email: 'admin@rvhub.com', action: 'Course Created', targetType: 'Course', targetName: 'JEE Advanced (Main + KCET Decoded)', details: 'Created new batch & assigned Dr. Priya Mehta', ip: '127.0.0.1' },
+          { adminId: '3', adminName: 'Rahul Verma', email: 'admin@rvhub.com', action: 'Fee Status Updated', targetType: 'User', targetName: 'Sneha Patel', details: 'Updated fee status to Paid (₹45,000)', ip: '127.0.0.1' },
+          { adminId: '3', adminName: 'Rahul Verma', email: 'admin@rvhub.com', action: 'Announcement Published', targetType: 'Announcement', targetName: 'JEE Advanced Mock Test schedule', details: 'Broadcast notice sent to all students', ip: '127.0.0.1' }
+        ]);
+      }
+
+      const superCount = await SuperAdminActivity.countDocuments();
+      if (superCount === 0) {
+        await SuperAdminActivity.insertMany([
+          { superAdminId: 'saas_1', superAdminName: 'Edchemy SaaS Director', email: 'superadmin@saas.com', action: 'Tenant Onboarded', tenantId: 't1', tenantName: 'RV Educational Institutions', details: 'Onboarded Enterprise plan with 5,000 max capacity', ip: '127.0.0.1' },
+          { superAdminId: 'saas_1', superAdminName: 'Edchemy SaaS Director', email: 'superadmin@saas.com', action: 'Subscription Upgraded', tenantId: 't3', tenantName: 'Sri Kumaran Group', details: 'Upgraded plan from Growth to Enterprise ($599/mo)', ip: '127.0.0.1' }
+        ]);
+      }
+
+      const userCount = await UserActivity.countDocuments();
+      if (userCount === 0) {
+        await UserActivity.insertMany([
+          { userId: 's1', userName: 'Arjun Sharma', email: 'arjun@rvhub.com', role: 'student', action: 'Video Lecture Watched', module: 'Video', details: 'Watched Laws of Motion (75% completed)', ip: '127.0.0.1' },
+          { userId: 's1', userName: 'Arjun Sharma', email: 'arjun@rvhub.com', role: 'student', action: 'Quiz Attempted', module: 'Quiz', details: 'Scored 85/100 in Physics Electrostatics Quiz', ip: '127.0.0.1' },
+          { userId: 's2', userName: 'Sneha Patel', email: 'sneha.patel@student.rvhub.com', role: 'student', action: 'Fee Payment Completed', module: 'Fee', details: 'Paid tuition fee ₹45,000 via UPI', ip: '127.0.0.1' },
+          { userId: 'f1', userName: 'Dr. Priya Mehta', email: 'priya@rvhub.com', role: 'faculty', action: 'Doubt Answered', module: 'Doubt', details: 'Resolved doubt on Gauss Law for Arjun Sharma', ip: '127.0.0.1' }
+        ]);
+      }
+
+      // Edchemy Models Seeding
+      const leaveCount = await LeaveRequest.countDocuments();
+      if (leaveCount === 0) {
+        await LeaveRequest.insertMany([
+          { studentId: 's1', studentName: 'Arjun Sharma', parentName: 'Suresh Sharma', startDate: '2026-03-20', endDate: '2026-03-22', reason: 'Family Medical Emergency', status: 'Approved', appliedOn: '2026-03-18' },
+          { studentId: 's2', studentName: 'Sneha Patel', parentName: 'Rajesh Patel', startDate: '2026-03-25', endDate: '2026-03-26', reason: 'Attending State Level Quiz Contest', status: 'Pending', appliedOn: '2026-03-21' }
+        ]);
+      }
+
+      const siblingCount = await SiblingAdmission.countDocuments();
+      if (siblingCount === 0) {
+        await SiblingAdmission.insertMany([
+          { parentName: 'Suresh Sharma', parentEmail: 'parent@rvhub.com', parentPhone: '9876500000', siblingName: 'Rohan Sharma', dob: '2012-05-14', gradeApplying: 'Grade 9 - Foundation Batch', previousSchool: 'Delhi Public School', status: 'Document Verification', applicationNo: 'SIB-2026-008' }
+        ]);
+      }
+
+      const marksCount = await MarksCard.countDocuments();
+      if (marksCount === 0) {
+        await MarksCard.insertMany([
+          {
+            studentId: 's1',
+            studentName: 'Arjun Sharma',
+            roll: 'RV2024001',
+            term: 'Mid-Term Examination 2024-25',
+            subjects: [
+              { name: 'Physics', marksObtained: 92, maxMarks: 100, grade: 'A+', teacherName: 'Dr. Priya Mehta', remark: 'Excellent understanding of Mechanics & Gauss Law.' },
+              { name: 'Chemistry', marksObtained: 84, maxMarks: 100, grade: 'A', teacherName: 'Prof. Amit Singh', remark: 'Good performance in Organic Reactions.' },
+              { name: 'Mathematics', marksObtained: 88, maxMarks: 100, grade: 'A+', teacherName: 'Mr. Raj Sharma', remark: 'Strong analytical skills in Calculus.' }
+            ],
+            totalObtained: 264,
+            totalMax: 300,
+            percentile: 96.8,
+            classRank: '3rd in Batch',
+            overallGrade: 'Distinction (A+)',
+            issueDate: 'Mar 15, 2025'
+          }
+        ]);
+      }
+
+      const eventCount = await CalendarEvent.countDocuments();
+      if (eventCount === 0) {
+        await CalendarEvent.insertMany([
+          { title: 'JEE Advanced Full Mock Test 1', category: 'Exam', date: '2026-03-25', time: '09:00 AM - 12:00 PM', venue: 'Main Auditorium / Online Portal', description: 'Mandatory full-syllabus mock exam.' },
+          { title: 'Parent-Teacher Meeting (PTM 2025)', category: 'PTM', date: '2026-03-28', time: '10:00 AM - 02:00 PM', venue: 'RV Jayanagar Campus', description: 'Discussion on Mid-Term marks card and attendance.' },
+          { title: 'Ugadi / Festivity Holiday', category: 'Holiday', date: '2026-03-30', time: 'All Day', venue: 'Holiday', description: 'Institution will remain closed.' }
+        ]);
+      }
+
+      const badgeCount = await Badge.countDocuments();
+      if (badgeCount === 0) {
+        await Badge.insertMany([
+          { studentId: 's1', badgeId: 'b1', title: '7-Day Streak Master', icon: '🔥', category: 'Streak', description: 'Maintained a 7-day active learning streak without missing a day.', isUnlocked: true, unlockedAt: 'Mar 10, 2026', progressPct: 100 },
+          { studentId: 's1', badgeId: 'b2', title: 'Speed Quizzer', icon: '⚡', category: 'Quiz', description: 'Scored 85%+ in Physics Electrostatics DPP.', isUnlocked: true, unlockedAt: 'Mar 12, 2026', progressPct: 100 },
+          { studentId: 's1', badgeId: 'b3', title: 'Top 5 Ranker', icon: '🏆', category: 'Academic', description: 'Achieved 3rd Rank in JEE Advanced Batch A.', isUnlocked: true, unlockedAt: 'Mar 15, 2026', progressPct: 100 },
+          { studentId: 's1', badgeId: 'b4', title: 'Distinction Scholar', icon: '📜', category: 'Academic', description: 'Scored Distinction (A+) in Mid-Term Examinations.', isUnlocked: true, unlockedAt: 'Mar 15, 2026', progressPct: 100 },
+          { studentId: 's1', badgeId: 'b5', title: 'Doubt Explorer', icon: '💬', category: 'Community', description: 'Submitted and resolved 5 academic doubts with faculty.', isUnlocked: true, unlockedAt: 'Mar 14, 2026', progressPct: 100 },
+          { studentId: 's1', badgeId: 'b6', title: 'Library Scholar', icon: '📚', category: 'Academic', description: 'Downloaded 10+ Question Papers & DPP Study Guides.', isUnlocked: false, unlockedAt: '', progressPct: 70 },
+          { studentId: 's1', badgeId: 'b7', title: 'Mock Exam Titan', icon: '🚀', category: 'Academic', description: 'Clear all 5 JEE Advanced Full Mock Exams.', isUnlocked: false, unlockedAt: '', progressPct: 20 }
+        ]);
+      }
+
+      const liveCount = await LiveClass.countDocuments();
+
+      if (liveCount === 0) {
+        await LiveClass.insertMany([
+          {
+            topic: 'Electrostatics: Gauss Law & Spherical Shells',
+            subject: 'Physics',
+            faculty: 'Dr. Priya Mehta',
+            status: 'ongoing',
+            onlineViewers: 142,
+            scheduledTime: 'LIVE NOW',
+            scheduledDate: 'Today',
+            streamUrl: 'https://www.youtube.com/embed/3JIpN8nnPoM',
+            chatMessages: [
+              { sender: 'Dr. Priya Mehta', role: 'faculty', text: 'Welcome everyone! Today we are deriving Gauss Law for non-uniform charge distributions.', time: '10:00 AM' },
+              { sender: 'Arjun Sharma', role: 'student', text: 'Dr. Priya, does electric flux depend on the radius of the gaussian sphere?', time: '10:05 AM' },
+              { sender: 'Dr. Priya Mehta', role: 'faculty', text: 'No Arjun, flux depends strictly on total enclosed charge divided by epsilon_0!', time: '10:06 AM' }
+            ]
+          },
+          {
+            topic: 'Aldehydes & Ketones: Reaction Mechanisms',
+            subject: 'Chemistry',
+            faculty: 'Prof. Amit Singh',
+            status: 'upcoming',
+            onlineViewers: 0,
+            scheduledTime: '11:30 AM',
+            scheduledDate: 'Today',
+            streamUrl: 'https://www.youtube.com/embed/3JIpN8nnPoM',
+            chatMessages: []
+          },
+          {
+            topic: 'Integration by Parts: Advanced Shortcuts',
+            subject: 'Mathematics',
+            faculty: 'Mr. Raj Sharma',
+            status: 'upcoming',
+            onlineViewers: 0,
+            scheduledTime: '02:00 PM',
+            scheduledDate: 'Today',
+            streamUrl: 'https://www.youtube.com/embed/3JIpN8nnPoM',
+            chatMessages: []
+          }
+        ]);
+      }
+
+      const qbCount = await QuestionBank.countDocuments();
+      if (qbCount === 0) {
+        await QuestionBank.insertMany([
+          {
+            subject: 'Physics',
+            moduleName: 'Module 1: Electrostatics & Gauss Law',
+            questionText: 'Electric flux through a closed Gaussian surface enclosing a dipole of charges +q and -q is:',
+            options: ['Zero', 'q / epsilon_0', '2q / epsilon_0', 'Infinity'],
+            correctOption: 'Zero',
+            difficulty: 'Easy',
+            type: 'MCQ',
+            solutionExplanation: 'Net charge enclosed by the Gaussian surface is (+q) + (-q) = 0. By Gauss Law, total electric flux = Q_enclosed / epsilon_0 = 0.',
+            createdBy: 'Dr. Priya Mehta'
+          },
+          {
+            subject: 'Physics',
+            moduleName: 'Module 1: Electrostatics & Gauss Law',
+            questionText: 'A thin conducting spherical shell of radius R carries charge Q. The electric field at distance r (r < R) from center is:',
+            options: ['Zero', 'kQ / r^2', 'kQ / R^2', 'kQ / r'],
+            correctOption: 'Zero',
+            difficulty: 'Medium',
+            type: 'MCQ',
+            solutionExplanation: 'Inside a conducting spherical shell, all charge resides on the outer surface. Hence, enclosed charge Q_enc = 0 for r < R, making E = 0.',
+            createdBy: 'Dr. Priya Mehta'
+          },
+          {
+            subject: 'Physics',
+            moduleName: 'Module 2: Current Electricity & Kirchhoff Laws',
+            questionText: 'In a Wheatstone bridge, if the galvanometer shows zero deflection, the condition satisfied is:',
+            options: ['P/Q = R/S', 'P*Q = R*S', 'P + Q = R + S', 'P - Q = R - S'],
+            correctOption: 'P/Q = R/S',
+            difficulty: 'Easy',
+            type: 'MCQ',
+            solutionExplanation: 'A Wheatstone bridge is balanced when opposite ratio of resistances are equal: P/Q = R/S.',
+            createdBy: 'Dr. Priya Mehta'
+          },
+          {
+            subject: 'Chemistry',
+            moduleName: 'Module 1: Organic Reaction Mechanisms',
+            questionText: 'Which of the following carbocations is most stable due to resonance and hyperconjugation?',
+            options: ['Tertiary butyl carbocation (CH3)3C+', 'Secondary propyl carbocation (CH3)2CH+', 'Primary ethyl carbocation CH3CH2+', 'Methyl carbocation CH3+'],
+            correctOption: 'Tertiary butyl carbocation (CH3)3C+',
+            difficulty: 'Medium',
+            type: 'MCQ',
+            solutionExplanation: 'Tertiary butyl carbocation has 9 hyperconjugative alpha-hydrogens, making it the most stable alkyl carbocation.',
+            createdBy: 'Prof. Amit Singh'
+          },
+          {
+            subject: 'Mathematics',
+            moduleName: 'Module 1: Differential Calculus & Limits',
+            questionText: 'Evaluate the limit: lim (x -> 0) [sin(5x) / x]:',
+            options: ['5', '1', '0', '1/5'],
+            correctOption: '5',
+            difficulty: 'Easy',
+            type: 'MCQ',
+            solutionExplanation: 'Using standard limit formula lim(u->0) sin(u)/u = 1: lim (5 * sin(5x)/(5x)) = 5 * 1 = 5.',
+            createdBy: 'Mr. Raj Sharma'
+          }
+        ]);
+      }
+
+      const vcCount = await VideoChatLog.countDocuments();
+
+      if (vcCount === 0) {
+        await VideoChatLog.insertMany([
+          {
+            videoTitle: 'Electrostatics & Gauss Law',
+            studentName: 'Arjun Sharma',
+            userQuery: 'Summarize Gauss Law proof for spherical shell',
+            aiResponse: '🤖 **AI Video Assistant:** At [⏱️ 12:45], Dr. Priya Mehta proves Gauss Law for a conducting spherical shell of radius R. Since all charge resides on the outer surface, enclosed charge Q_enc = 0 for r < R. Therefore, the electric field E = 0 inside the shell.',
+            timestampMark: '12:45',
+            subject: 'Physics'
+          }
+        ]);
+      }
+
+      const ivCount = await InVideoQuiz.countDocuments();
+
+      if (ivCount === 0) {
+        await InVideoQuiz.insertMany([
+          {
+            videoTitle: 'Electrostatics & Gauss Law',
+            timestampSeconds: 135,
+            timestampFormatted: '02:15',
+            stepIndex: '1/7',
+            title: 'Course overview',
+            description: 'Switch between courses & get course information with progress',
+            questionText: 'In-Video Checkpoint (1/7): Does electric flux depend on Gaussian sphere radius?',
+            options: ['A) Yes, directly proportional', 'B) No, depends only on enclosed charge', 'C) Inversely proportional'],
+            correctOption: 'B) No, depends only on enclosed charge',
+            type: 'Checkpoint'
+          },
+          {
+            videoTitle: 'Electrostatics & Gauss Law',
+            timestampSeconds: 330,
+            timestampFormatted: '05:30',
+            stepIndex: '2/7',
+            title: 'Module overview',
+            description: 'See the list of all modules with due date & progress statuses like completed, pending, etc.',
+            questionText: 'In-Video Checkpoint (2/7): What is electric field inside a charged hollow conductor?',
+            options: ['A) Zero', 'B) kQ/r^2', 'C) Infinite'],
+            correctOption: 'A) Zero',
+            type: 'Checkpoint'
+          }
+        ]);
+      }
+
+      const ugCount = await UpGradFeature.countDocuments();
+
+      if (ugCount === 0) {
+        await UpGradFeature.create({
+          studentId: 's1',
+          studentName: 'Arjun Sharma',
+          studentProgressPct: 15.8,
+          batchAvgProgressPct: 8.2,
+          dailyGoalMins: 30,
+          dailyGoalCompletedMins: 0,
+          moduleProgressPct: 41.9,
+          timeRemainingFormatted: '7h 5m left'
+        });
+      }
+
+      const faCount = await FeeAutomation.countDocuments();
+
+      if (faCount === 0) {
+        await FeeAutomation.insertMany([
+          {
+            studentId: 's1',
+            studentName: 'Arjun Sharma',
+            rollNo: 'RVLH-2026-042',
+            termName: 'Term 1 — Academic Year 2025-26',
+            totalFee: 50000,
+            paidFee: 25000,
+            dueFee: 0,
+            paymentMode: 'Online',
+            receiptNo: 'REC-2026-8801',
+            transactionId: 'TXN-99042817'
+          },
+          {
+            studentId: 's1',
+            studentName: 'Arjun Sharma',
+            rollNo: 'RVLH-2026-042',
+            termName: 'Term 2 — Academic Year 2025-26',
+            totalFee: 50000,
+            paidFee: 0,
+            dueFee: 25000,
+            paymentMode: 'ChequeDropBox',
+            receiptNo: 'REC-2026-9042',
+            transactionId: 'CHQ-409218',
+            chequeDetails: {
+              chequeNo: '409218',
+              bankName: 'HDFC Bank Jayanagar',
+              dropboxLocation: 'Drop Box DB-04 (Main Gate)',
+              clearanceStatus: 'Pending Clearance'
+            }
+          }
+        ]);
+      }
+
+      const p2pCount = await P2PDoubt.countDocuments();
+
+      if (p2pCount === 0) {
+        await P2PDoubt.insertMany([
+          {
+            studentName: 'Arjun Sharma',
+            subject: 'Physics',
+            moduleName: 'Module 1: Electrostatics',
+            questionTitle: 'Why is electric field zero inside a hollow spherical conductor?',
+            questionText: 'When a hollow metallic sphere is charged, why does all charge shift to the outer surface leaving E = 0 inside?',
+            upvotes: 12,
+            status: 'Resolved',
+            aiSuggestedAnswer: '🤖 **AI Auto-Solver:** Charges repel each other and move as far apart as possible to minimize potential energy. In a conductor, charges can move freely, so they accumulate on the outer boundary. By Gauss Law, ∮ E·dA = Q_enc/ε₀. Since Q_enc = 0, E = 0.',
+            answers: [
+              {
+                author: 'Rohan Gupta (Peer Mentor)',
+                authorRole: 'student',
+                text: 'Because electrostatic equilibrium requires zero force on free electrons inside the bulk metal. If E != 0, electrons would accelerate until E becomes 0.',
+                upvotes: 8,
+                isVerified: true
+              },
+              {
+                author: 'Dr. Priya Mehta',
+                authorRole: 'faculty',
+                text: 'Verified! Excellent physical reasoning by Rohan.',
+                upvotes: 15,
+                isVerified: true
+              }
+            ]
+          }
+        ]);
+      }
+
+      const stCount = await SaaSTenant.countDocuments();
+
+      if (stCount === 0) {
+        await SaaSTenant.insertMany([
+          {
+            tenantName: 'RV College of Engineering',
+            domain: 'rvce.edu.in',
+            subdomain: 'rvce',
+            plan: 'Enterprise',
+            maxUsers: 5000,
+            usedUsers: 4200,
+            mrrAmount: 150000,
+            status: 'Active',
+            adminEmail: 'admin@rvce.edu.in'
+          },
+          {
+            tenantName: 'MediaCell Institute of Tech',
+            domain: 'mediacell.edu.in',
+            subdomain: 'mediacell',
+            plan: 'Professional',
+            maxUsers: 2500,
+            usedUsers: 1850,
+            mrrAmount: 95000,
+            status: 'Active',
+            adminEmail: 'principal@mediacell.edu.in'
+          },
+          {
+            tenantName: 'Delhi Public School Bangalore',
+            domain: 'dpsbangalore.edu.in',
+            subdomain: 'dpsb',
+            plan: 'Starter',
+            maxUsers: 1000,
+            usedUsers: 890,
+            mrrAmount: 45000,
+            status: 'Active',
+            adminEmail: 'principal@dpsb.edu.in'
+          }
+        ]);
+      }
+
+      const shCount = await SelfHostedConfig.countDocuments();
+
+      if (shCount === 0) {
+        await SelfHostedConfig.create({
+          deploymentType: 'SelfHosted',
+          serverStatus: 'Online',
+          cpuUsagePct: 24,
+          ramUsagePct: 28,
+          diskUsagePct: 35,
+          securityPatchVersion: 'v4.8.2-LMS-SECURE',
+          backupLogs: [
+            { backupId: 'DUMP-20260803-01', sizeMb: 42.5, timestamp: new Date() },
+            { backupId: 'DUMP-20260802-01', sizeMb: 41.8, timestamp: new Date(Date.now() - 86400000) }
+          ]
+        });
+      }
+
+      console.log('✅ Activity Audit Logs, Edchemy Parent Portal, Badges, Live Classes, Question Bank, Video Chat AI, In-Video Quizzes, upGrad Analytics, Fee Automation, P2P Doubts, SaaS Tenants & Self-Hosted Infrastructure Seeded!');
+    }
+  } catch (err) {
+    console.error('Error seeding activity logs:', err.message);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
   console.log(`✅ Seeded LMS: ${users.length} users, ${courses.length} courses, ${videos.length} videos, ${materials.length} materials.`);
 }
 
 seedData();
+
 
 // ═══════════════════════════════════════════════════
 // AUTH MIDDLEWARE
@@ -910,6 +1429,1009 @@ app.post('/api/payments', protect, (req, res) => {
   res.status(201).json(newP);
 });
 
+// ═══════════════════════════════════════════════════
+// ROLE-SEPARATED ACTIVITY AUDIT LOG ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/activities/admin', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const logs = await AdminActivity.find().sort({ createdAt: -1 }).limit(100);
+      return res.json(logs);
+    }
+    res.json([
+      { adminName: 'Rahul Verma', email: 'admin@rvhub.com', action: 'Course Created', targetType: 'Course', targetName: 'JEE Advanced', createdAt: new Date() }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/activities/superadmin', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const logs = await SuperAdminActivity.find().sort({ createdAt: -1 }).limit(100);
+      return res.json(logs);
+    }
+    res.json([
+      { superAdminName: 'SaaS Director', email: 'superadmin@saas.com', action: 'Tenant Onboarded', tenantName: 'RV Institutions', createdAt: new Date() }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/activities/users', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const logs = await UserActivity.find().sort({ createdAt: -1 }).limit(100);
+      return res.json(logs);
+    }
+    res.json([
+      { userName: 'Arjun Sharma', role: 'student', action: 'Video Lecture Watched', module: 'Video', createdAt: new Date() }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// EDCHEMY PARENT & ACADEMIC PORTAL ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/leaves', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const leaves = await LeaveRequest.find().sort({ createdAt: -1 });
+      return res.json(leaves);
+    }
+    res.json([
+      { _id: 'l1', studentName: 'Arjun Sharma', parentName: 'Suresh Sharma', startDate: '2026-03-20', endDate: '2026-03-22', reason: 'Family Medical Emergency', status: 'Approved' }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/leaves', async (req, res) => {
+  try {
+    const { studentId, studentName, parentName, startDate, endDate, reason } = req.body;
+    if (isMongoConnected) {
+      const newLeave = await LeaveRequest.create({
+        studentId: studentId || 's1',
+        studentName: studentName || 'Arjun Sharma',
+        parentName: parentName || 'Suresh Sharma',
+        startDate,
+        endDate,
+        reason,
+        status: 'Pending'
+      });
+      return res.status(201).json(newLeave);
+    }
+    res.status(201).json({ _id: genId(), studentName, parentName, startDate, endDate, reason, status: 'Pending' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/sibling-admissions', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const apps = await SiblingAdmission.find().sort({ createdAt: -1 });
+      return res.json(apps);
+    }
+    res.json([
+      { _id: 'sib1', parentName: 'Suresh Sharma', siblingName: 'Rohan Sharma', gradeApplying: 'Grade 9 - Foundation Batch', status: 'Document Verification', applicationNo: 'SIB-2026-008' }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/sibling-admissions', async (req, res) => {
+  try {
+    const { parentName, parentEmail, parentPhone, siblingName, dob, gradeApplying, previousSchool } = req.body;
+    const applicationNo = 'SIB-2026-' + String(Math.floor(100 + Math.random() * 900));
+    if (isMongoConnected) {
+      const appRecord = await SiblingAdmission.create({
+        parentName,
+        parentEmail,
+        parentPhone,
+        siblingName,
+        dob,
+        gradeApplying,
+        previousSchool,
+        status: 'Form Submitted',
+        applicationNo
+      });
+      return res.status(201).json(appRecord);
+    }
+    res.status(201).json({ _id: genId(), siblingName, gradeApplying, status: 'Form Submitted', applicationNo });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/marks-cards', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const cards = await MarksCard.find();
+      return res.json(cards);
+    }
+    res.json([
+      {
+        studentName: 'Arjun Sharma',
+        roll: 'RV2024001',
+        term: 'Mid-Term Examination 2024-25',
+        subjects: [
+          { name: 'Physics', marksObtained: 92, maxMarks: 100, grade: 'A+', teacherName: 'Dr. Priya Mehta', remark: 'Excellent understanding of Mechanics & Gauss Law.' },
+          { name: 'Chemistry', marksObtained: 84, maxMarks: 100, grade: 'A', teacherName: 'Prof. Amit Singh', remark: 'Good performance in Organic Reactions.' },
+          { name: 'Mathematics', marksObtained: 88, maxMarks: 100, grade: 'A+', teacherName: 'Mr. Raj Sharma', remark: 'Strong analytical skills in Calculus.' }
+        ],
+        totalObtained: 264,
+        totalMax: 300,
+        percentile: 96.8,
+        classRank: '3rd in Batch',
+        overallGrade: 'Distinction (A+)'
+      }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/calendar-events', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const events = await CalendarEvent.find().sort({ date: 1 });
+      return res.json(events);
+    }
+    res.json([
+      { title: 'JEE Advanced Full Mock Test 1', category: 'Exam', date: '2026-03-25', time: '09:00 AM - 12:00 PM', venue: 'Main Auditorium' },
+      { title: 'Parent-Teacher Meeting (PTM 2025)', category: 'PTM', date: '2026-03-28', time: '10:00 AM - 02:00 PM', venue: 'RV Jayanagar Campus' },
+      { title: 'Ugadi / Festivity Holiday', category: 'Holiday', date: '2026-03-30', time: 'All Day', venue: 'Holiday' }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// PARENT SMS & WHATSAPP DISPATCHER ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.post('/api/notify-parent', async (req, res) => {
+  try {
+    const { studentName, parentPhone, channel, type, messageText } = req.body;
+    if (!studentName || !parentPhone || !messageText) {
+      return res.status(400).json({ message: 'Missing required notification details' });
+    }
+    let logRecord = { studentName, parentPhone, channel: channel || 'WhatsApp', type: type || 'Attendance', messageText, status: 'Sent' };
+    if (isMongoConnected) {
+      logRecord = await MessageLog.create(logRecord);
+    }
+    res.status(201).json({ message: `${channel || 'WhatsApp'} message dispatched to parent!`, data: logRecord });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/notify-parent/logs', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const logs = await MessageLog.find().sort({ createdAt: -1 }).limit(50);
+      return res.json(logs);
+    }
+    res.json([
+      { studentName: 'Arjun Sharma', parentPhone: '9876500000', channel: 'WhatsApp', type: 'Attendance', messageText: 'Arjun Sharma marked PRESENT today.', status: 'Sent', createdAt: new Date() }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// BADGES & STUDENT JOURNEY ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/badges', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const badges = await Badge.find();
+      return res.json(badges);
+    }
+    res.json([
+      { title: '7-Day Streak Master', icon: '🔥', category: 'Streak', description: 'Maintained 7-day study streak.', isUnlocked: true, unlockedAt: 'Mar 10, 2026', progressPct: 100 },
+      { title: 'Speed Quizzer', icon: '⚡', category: 'Quiz', description: 'Scored 85%+ in Physics Electrostatics.', isUnlocked: true, unlockedAt: 'Mar 12, 2026', progressPct: 100 },
+      { title: 'Top 5 Ranker', icon: '🏆', category: 'Academic', description: 'Ranked #3 in Batch A.', isUnlocked: true, unlockedAt: 'Mar 15, 2026', progressPct: 100 }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/student-journey', (req, res) => {
+  res.json({
+    phases: [
+      { phase: 1, title: 'Onboarding & Orientation', icon: '🎓', status: 'Completed', date: 'Jan 10, 2026', desc: 'Enrolled in JEE Advanced Batch A, campus orientation completed.' },
+      { phase: 2, title: 'Core Concepts & Video Lectures', icon: '⚡', status: 'Completed', date: 'Feb 15, 2026', desc: 'Watched 10+ core video lectures and completed first 5 DPPs.' },
+      { phase: 3, title: 'Mid-Term Exam & Batch Rank', icon: '🧪', status: 'Active', date: 'Mar 15, 2026', desc: 'Scored 264/300 (A+ Distinction) and achieved 3rd Rank in Batch.' },
+      { phase: 4, title: 'Mock Test Series & Doubt Mastery', icon: '🚀', status: 'In Progress', date: 'Apr 2026', desc: 'Targeting 5 full-syllabus mock tests and doubt resolution.' },
+      { phase: 5, title: 'Final Entrance Exam & Certification', icon: '🏆', status: 'Upcoming', date: 'May 2026', desc: 'Graduation readiness and final hall ticket issuance.' }
+    ]
+  });
+});
+
+// ═══════════════════════════════════════════════════
+// REAL-TIME LIVE CLASSES & WATCHING NOW ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/live', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const classes = await LiveClass.find().sort({ createdAt: -1 });
+      return res.json(classes);
+    }
+    res.json([
+      {
+        _id: 'live1',
+        topic: 'Electrostatics: Gauss Law & Spherical Shells',
+        subject: 'Physics',
+        faculty: 'Dr. Priya Mehta',
+        status: 'ongoing',
+        onlineViewers: 142,
+        scheduledTime: 'LIVE NOW',
+        chatMessages: [
+          { sender: 'Dr. Priya Mehta', role: 'faculty', text: 'Welcome everyone! Today we are deriving Gauss Law.', time: '10:00 AM' },
+          { sender: 'Arjun Sharma', role: 'student', text: 'Does flux depend on Gaussian sphere radius?', time: '10:05 AM' }
+        ]
+      },
+      {
+        _id: 'live2',
+        topic: 'Aldehydes & Ketones: Reaction Mechanisms',
+        subject: 'Chemistry',
+        faculty: 'Prof. Amit Singh',
+        status: 'upcoming',
+        onlineViewers: 0,
+        scheduledTime: '11:30 AM',
+        chatMessages: []
+      }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/live/:id/heartbeat', async (req, res) => {
+  try {
+    const { action } = req.body; // 'join', 'leave', or 'ping'
+    if (isMongoConnected) {
+      const liveSession = await LiveClass.findById(req.params.id);
+      if (liveSession) {
+        if (action === 'join') liveSession.onlineViewers += 1;
+        else if (action === 'leave' && liveSession.onlineViewers > 0) liveSession.onlineViewers -= 1;
+        else liveSession.onlineViewers += Math.floor(Math.random() * 3) - 1; // minor pulse fluctuation
+        if (liveSession.onlineViewers < 1) liveSession.onlineViewers = 1;
+        await liveSession.save();
+        return res.json({ onlineViewers: liveSession.onlineViewers });
+      }
+    }
+    res.json({ onlineViewers: 145 });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/live/:id/chat', async (req, res) => {
+  try {
+    const { sender, role, text } = req.body;
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMsg = { sender: sender || 'Arjun Sharma', role: role || 'student', text, time: now, timestamp: new Date() };
+
+    if (isMongoConnected) {
+      const liveSession = await LiveClass.findById(req.params.id);
+      if (liveSession) {
+        liveSession.chatMessages.push(newMsg);
+        await liveSession.save();
+        return res.status(201).json(newMsg);
+      }
+    }
+    res.status(201).json(newMsg);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// MODULE-BASED QUESTION BANK GENERATOR ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/question-bank', async (req, res) => {
+  try {
+    const { subject, moduleName, difficulty } = req.query;
+    let query = {};
+    if (subject && subject !== 'All Subjects') query.subject = subject;
+    if (moduleName && moduleName !== 'All Modules') query.moduleName = moduleName;
+    if (difficulty && difficulty !== 'All Difficulties') query.difficulty = difficulty;
+
+    if (isMongoConnected) {
+      const questions = await QuestionBank.find(query).sort({ createdAt: -1 });
+      return res.json(questions);
+    }
+    res.json([
+      {
+        _id: 'qb1',
+        subject: 'Physics',
+        moduleName: 'Module 1: Electrostatics & Gauss Law',
+        questionText: 'Electric flux through a closed Gaussian surface enclosing a dipole of charges +q and -q is:',
+        options: ['Zero', 'q / epsilon_0', '2q / epsilon_0', 'Infinity'],
+        correctOption: 'Zero',
+        difficulty: 'Easy',
+        type: 'MCQ',
+        solutionExplanation: 'Net charge enclosed by Gaussian surface is (+q) + (-q) = 0. By Gauss Law, total electric flux = Q_enclosed / epsilon_0 = 0.',
+        createdBy: 'Dr. Priya Mehta'
+      },
+      {
+        _id: 'qb2',
+        subject: 'Physics',
+        moduleName: 'Module 1: Electrostatics & Gauss Law',
+        questionText: 'A thin conducting spherical shell of radius R carries charge Q. The electric field at distance r (r < R) from center is:',
+        options: ['Zero', 'kQ / r^2', 'kQ / R^2', 'kQ / r'],
+        correctOption: 'Zero',
+        difficulty: 'Medium',
+        type: 'MCQ',
+        solutionExplanation: 'Inside a conducting spherical shell, charge resides on outer surface. Thus, enclosed charge = 0, making E = 0.',
+        createdBy: 'Dr. Priya Mehta'
+      }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/question-bank/generate', async (req, res) => {
+  try {
+    const { subject, moduleName, difficulty, count } = req.body;
+    let query = {};
+    if (subject && subject !== 'All Subjects') query.subject = subject;
+    if (moduleName && moduleName !== 'All Modules') query.moduleName = moduleName;
+    if (difficulty && difficulty !== 'All Difficulties') query.difficulty = difficulty;
+
+    const limit = parseInt(count) || 5;
+
+    if (isMongoConnected) {
+      const questions = await QuestionBank.find(query).limit(limit);
+      return res.json({ title: `${subject || 'Custom'} ${moduleName || 'Question Paper'}`, questions });
+    }
+
+    res.json({
+      title: `${subject || 'Physics'} Question Paper`,
+      questions: [
+        {
+          _id: 'qb1',
+          subject: subject || 'Physics',
+          moduleName: moduleName || 'Module 1: Electrostatics & Gauss Law',
+          questionText: 'Electric flux through a closed Gaussian surface enclosing a dipole of charges +q and -q is:',
+          options: ['Zero', 'q / epsilon_0', '2q / epsilon_0', 'Infinity'],
+          correctOption: 'Zero',
+          difficulty: difficulty || 'Easy',
+          type: 'MCQ',
+          solutionExplanation: 'Net charge enclosed by Gaussian surface is (+q) + (-q) = 0. By Gauss Law, flux = 0.',
+          createdBy: 'Dr. Priya Mehta'
+        }
+      ]
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/question-bank/add', async (req, res) => {
+  try {
+    const { subject, moduleName, questionText, options, correctOption, difficulty, type, solutionExplanation, createdBy } = req.body;
+    if (!subject || !moduleName || !questionText || !correctOption) {
+      return res.status(400).json({ message: 'Missing required question fields' });
+    }
+    let newQ = { subject, moduleName, questionText, options: options || [], correctOption, difficulty: difficulty || 'Medium', type: type || 'MCQ', solutionExplanation: solutionExplanation || 'Refer standard textbook', createdBy: createdBy || 'Faculty' };
+    if (isMongoConnected) {
+      newQ = await QuestionBank.create(newQ);
+    }
+    res.status(201).json({ message: 'Question added to module bank!', question: newQ });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// CHAT WITH VIDEO AI ASSISTANT ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.post('/api/video-chat', async (req, res) => {
+  try {
+    const { videoTitle, userQuery, currentTimeMark, studentName } = req.body;
+    if (!videoTitle || !userQuery) {
+      return res.status(400).json({ message: 'Missing videoTitle or userQuery' });
+    }
+
+    let aiResponse = '';
+    const qLower = userQuery.toLowerCase();
+    const timeMark = currentTimeMark || '12:45';
+
+    if (qLower.includes('summarize') || qLower.includes('summary')) {
+      aiResponse = `🤖 **AI Video Assistant:** Here is the key summary for **"${videoTitle}"**:\n\n• **[⏱️ 00:00 - 05:15]** Introduction & Fundamental Definitions.\n• **[⏱️ 12:45 - 28:30]** Derivation of Gauss Law for conducting spherical shells.\n• **[⏱️ 34:10 - 48:00]** Solved JEE Advanced numerical examples on electric flux & charge density.`;
+    } else if (qLower.includes('quiz') || qLower.includes('question')) {
+      aiResponse = `🤖 **AI Video Practice Quiz for "${videoTitle}":**\n\n1. What is the electric field inside a charged spherical conductor of radius R at distance r < R?\n   *(Hint: Check timestamp [⏱️ 12:45])*`;
+    } else {
+      aiResponse = `🤖 **AI Video Assistant:** At timestamp **[⏱️ ${timeMark}]** in *"${videoTitle}"*, the instructor explains that the enclosed charge determines the net flux. For your question *"${userQuery}"*, remember that electric flux is independent of the radius of the Gaussian surface.`;
+    }
+
+    let record = { videoTitle, studentName: studentName || 'Arjun Sharma', userQuery, aiResponse, timestampMark: timeMark, subject: 'Physics' };
+    if (isMongoConnected) {
+      record = await VideoChatLog.create(record);
+    }
+
+    res.json(record);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/video-chat/history', async (req, res) => {
+  try {
+    const { videoTitle } = req.query;
+    let query = {};
+    if (videoTitle) query.videoTitle = videoTitle;
+
+    if (isMongoConnected) {
+      const logs = await VideoChatLog.find(query).sort({ createdAt: 1 });
+      return res.json(logs);
+    }
+    res.json([
+      {
+        videoTitle: videoTitle || 'Electrostatics & Gauss Law',
+        studentName: 'Arjun Sharma',
+        userQuery: 'Summarize Gauss Law proof for spherical shell',
+        aiResponse: '🤖 **AI Video Assistant:** At [⏱️ 12:45], Dr. Priya Mehta proves Gauss Law for a conducting spherical shell of radius R. Since all charge resides on outer surface, enclosed charge Q_enc = 0 for r < R, making E = 0.',
+        timestampMark: '12:45'
+      }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// IN-VIDEO CHECKPOINT QUIZZES & SURVEYS ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/in-video-quizzes', async (req, res) => {
+  try {
+    const { videoTitle } = req.query;
+    let query = {};
+    if (videoTitle) query.videoTitle = videoTitle;
+
+    if (isMongoConnected) {
+      const quizzes = await InVideoQuiz.find(query).sort({ timestampSeconds: 1 });
+      return res.json(quizzes);
+    }
+
+    res.json([
+      {
+        videoTitle: videoTitle || 'Electrostatics & Gauss Law',
+        timestampSeconds: 135,
+        timestampFormatted: '02:15',
+        stepIndex: '1/7',
+        title: 'Course overview',
+        description: 'Switch between courses & get course information with progress',
+        questionText: 'In-Video Checkpoint (1/7): Does electric flux depend on Gaussian sphere radius?',
+        options: ['A) Yes, directly proportional', 'B) No, depends only on enclosed charge', 'C) Inversely proportional'],
+        correctOption: 'B) No, depends only on enclosed charge',
+        type: 'Checkpoint'
+      },
+      {
+        videoTitle: videoTitle || 'Electrostatics & Gauss Law',
+        timestampSeconds: 330,
+        timestampFormatted: '05:30',
+        stepIndex: '2/7',
+        title: 'Module overview',
+        description: 'See the list of all modules with due date & progress statuses like completed, pending, etc.',
+        questionText: 'In-Video Checkpoint (2/7): What is electric field inside a charged hollow conductor?',
+        options: ['A) Zero', 'B) kQ/r^2', 'C) Infinite'],
+        correctOption: 'A) Zero',
+        type: 'Checkpoint'
+      }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/in-video-quizzes/submit', (req, res) => {
+  const { selectedOption, stepIndex } = req.body;
+  res.json({ message: `Response for step ${stepIndex || '1/7'} submitted!`, success: true });
+});
+
+// ═══════════════════════════════════════════════════
+// UPGRAD ANALYTICS BENCHMARK & DAILY GOAL ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/upgrad-analytics', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const data = await UpGradFeature.findOne({ studentId: 's1' });
+      if (data) return res.json(data);
+    }
+    res.json({
+      studentName: 'Arjun Sharma',
+      studentProgressPct: 15.8,
+      batchAvgProgressPct: 8.2,
+      dailyGoalMins: 30,
+      dailyGoalCompletedMins: 15,
+      moduleProgressPct: 41.9,
+      timeRemainingFormatted: '7h 5m left'
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/upgrad-analytics/log-time', async (req, res) => {
+  try {
+    const { mins } = req.body;
+    const addedMins = parseInt(mins) || 15;
+
+    if (isMongoConnected) {
+      let record = await UpGradFeature.findOne({ studentId: 's1' });
+      if (!record) {
+        record = new UpGradFeature({ studentId: 's1' });
+      }
+      record.dailyGoalCompletedMins += addedMins;
+      if (record.dailyGoalCompletedMins > record.dailyGoalMins) {
+        record.dailyGoalCompletedMins = record.dailyGoalMins;
+      }
+      await record.save();
+      return res.json(record);
+    }
+
+    res.json({
+      studentName: 'Arjun Sharma',
+      studentProgressPct: 15.8,
+      batchAvgProgressPct: 8.2,
+      dailyGoalMins: 30,
+      dailyGoalCompletedMins: 15,
+      moduleProgressPct: 41.9,
+      timeRemainingFormatted: '7h 5m left'
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// FEE AUTOMATION (ONLINE, OTC, CHEQUE DROP BOX) ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/fee-automation', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const fees = await FeeAutomation.find({ studentId: 's1' }).sort({ createdAt: -1 });
+      if (fees && fees.length) return res.json(fees);
+    }
+
+    res.json([
+      {
+        studentId: 's1',
+        studentName: 'Arjun Sharma',
+        rollNo: 'RVLH-2026-042',
+        termName: 'Term 1 — Academic Year 2025-26',
+        totalFee: 50000,
+        paidFee: 25000,
+        dueFee: 0,
+        paymentMode: 'Online',
+        receiptNo: 'REC-2026-8801',
+        transactionId: 'TXN-99042817'
+      },
+      {
+        studentId: 's1',
+        studentName: 'Arjun Sharma',
+        rollNo: 'RVLH-2026-042',
+        termName: 'Term 2 — Academic Year 2025-26',
+        totalFee: 50000,
+        paidFee: 0,
+        dueFee: 25000,
+        paymentMode: 'ChequeDropBox',
+        receiptNo: 'REC-2026-9042',
+        transactionId: 'CHQ-409218',
+        chequeDetails: {
+          chequeNo: '409218',
+          bankName: 'HDFC Bank Jayanagar',
+          dropboxLocation: 'Drop Box DB-04 (Main Gate)',
+          clearanceStatus: 'Pending Clearance'
+        }
+      }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/fee-automation/pay-online', async (req, res) => {
+  try {
+    const { amount, paymentMethod } = req.body;
+    const paidAmt = parseInt(amount) || 25000;
+    const recNo = 'REC-2026-' + Math.floor(1000 + Math.random() * 9000);
+    const txnId = 'RAZORPAY-' + Math.floor(10000000 + Math.random() * 90000000);
+
+    let newRec = {
+      studentId: 's1',
+      studentName: 'Arjun Sharma',
+      rollNo: 'RVLH-2026-042',
+      termName: 'Term 2 — Academic Year 2025-26',
+      totalFee: 50000,
+      paidFee: paidAmt,
+      dueFee: 0,
+      paymentMode: 'Online',
+      receiptNo: recNo,
+      transactionId: txnId
+    };
+
+    if (isMongoConnected) {
+      newRec = await FeeAutomation.create(newRec);
+    }
+
+    res.status(201).json({ message: 'Online Fee Payment Successful!', receipt: newRec });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/fee-automation/record-otc', async (req, res) => {
+  try {
+    const { amount, accountantName } = req.body;
+    const paidAmt = parseInt(amount) || 25000;
+    const recNo = 'OTC-2026-' + Math.floor(1000 + Math.random() * 9000);
+    const txnId = 'CASH-' + Math.floor(100000 + Math.random() * 900000);
+
+    let newRec = {
+      studentId: 's1',
+      studentName: 'Arjun Sharma',
+      rollNo: 'RVLH-2026-042',
+      termName: 'Term 2 — Academic Year 2025-26',
+      totalFee: 50000,
+      paidFee: paidAmt,
+      dueFee: 0,
+      paymentMode: 'OverTheCounter',
+      receiptNo: recNo,
+      transactionId: txnId
+    };
+
+    if (isMongoConnected) {
+      newRec = await FeeAutomation.create(newRec);
+    }
+
+    res.status(201).json({ message: 'Over-the-Counter Payment Recorded!', receipt: newRec });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/fee-automation/cheque-drop', async (req, res) => {
+  try {
+    const { chequeNo, bankName, dropboxLocation } = req.body;
+    const recNo = 'CHQ-REC-' + Math.floor(1000 + Math.random() * 9000);
+
+    let newRec = {
+      studentId: 's1',
+      studentName: 'Arjun Sharma',
+      rollNo: 'RVLH-2026-042',
+      termName: 'Term 2 — Academic Year 2025-26',
+      totalFee: 50000,
+      paidFee: 0,
+      dueFee: 25000,
+      paymentMode: 'ChequeDropBox',
+      receiptNo: recNo,
+      transactionId: 'CHQ-' + (chequeNo || '409218'),
+      chequeDetails: {
+        chequeNo: chequeNo || '409218',
+        bankName: bankName || 'HDFC Bank',
+        dropboxLocation: dropboxLocation || 'Drop Box DB-04',
+        clearanceStatus: 'Pending Clearance'
+      }
+    };
+
+    if (isMongoConnected) {
+      newRec = await FeeAutomation.create(newRec);
+    }
+
+    res.status(201).json({ message: 'Cheque Deposit Recorded into Drop Box!', receipt: newRec });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// DOUBTS & PEER-TO-PEER (P2P) FORUM ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/p2p-doubts', async (req, res) => {
+  try {
+    const { subject, status } = req.query;
+    let query = {};
+    if (subject && subject !== 'All Subjects') query.subject = subject;
+    if (status && status !== 'All Status') query.status = status;
+
+    if (isMongoConnected) {
+      const doubts = await P2PDoubt.find(query).sort({ createdAt: -1 });
+      if (doubts && doubts.length) return res.json(doubts);
+    }
+
+    res.json([
+      {
+        _id: 'p2p-1',
+        studentName: 'Arjun Sharma',
+        subject: 'Physics',
+        moduleName: 'Module 1: Electrostatics',
+        questionTitle: 'Why is electric field zero inside a hollow spherical conductor?',
+        questionText: 'When a hollow metallic sphere is charged, why does all charge shift to the outer surface leaving E = 0 inside?',
+        upvotes: 12,
+        status: 'Resolved',
+        aiSuggestedAnswer: '🤖 **AI Auto-Solver:** Charges repel each other and move as far apart as possible to minimize potential energy. In a conductor, charges can move freely, so they accumulate on the outer boundary. By Gauss Law, ∮ E·dA = Q_enc/ε₀. Since Q_enc = 0, E = 0.',
+        answers: [
+          {
+            author: 'Rohan Gupta (Peer Mentor)',
+            authorRole: 'student',
+            text: 'Because electrostatic equilibrium requires zero force on free electrons inside the bulk metal. If E != 0, electrons would accelerate until E becomes 0.',
+            upvotes: 8,
+            isVerified: true
+          },
+          {
+            author: 'Dr. Priya Mehta',
+            authorRole: 'faculty',
+            text: 'Verified! Excellent physical reasoning by Rohan.',
+            upvotes: 15,
+            isVerified: true
+          }
+        ]
+      }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/p2p-doubts/ask', async (req, res) => {
+  try {
+    const { subject, moduleName, questionTitle, questionText, studentName } = req.body;
+    if (!subject || !questionTitle || !questionText) {
+      return res.status(400).json({ message: 'Missing subject or question content' });
+    }
+
+    const aiAnswer = `🤖 **AI Auto-Solver:** For "${questionTitle}", remember that in ${subject}, fundamental principles dictate step-by-step balance. Step 1: Write down given parameters. Step 2: Apply core conservation equations. Step 3: Solve for unknown variables.`;
+
+    let doubt = {
+      studentName: studentName || 'Arjun Sharma',
+      subject,
+      moduleName: moduleName || 'Module 1',
+      questionTitle,
+      questionText,
+      upvotes: 1,
+      status: 'Resolved',
+      aiSuggestedAnswer: aiAnswer,
+      answers: []
+    };
+
+    if (isMongoConnected) {
+      doubt = await P2PDoubt.create(doubt);
+    }
+
+    res.status(201).json({ message: 'Doubt posted successfully with AI resolution!', doubt });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/p2p-doubts/:id/answer', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { author, authorRole, text } = req.body;
+
+    let ans = { author: author || 'Student Peer', authorRole: authorRole || 'student', text: text || 'Standard peer explanation', upvotes: 1, isVerified: false };
+
+    if (isMongoConnected && id !== 'p2p-1') {
+      const d = await P2PDoubt.findById(id);
+      if (d) {
+        d.answers.push(ans);
+        d.status = 'Resolved';
+        await d.save();
+      }
+    }
+
+    res.status(201).json({ message: 'Peer answer posted! +10 Peer Karma Points awarded 🏅', answer: ans });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// MULTI-TENANT SAAS PLATFORM ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/saas/tenants', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const tenants = await SaaSTenant.find({}).sort({ createdAt: -1 });
+      if (tenants && tenants.length) return res.json(tenants);
+    }
+
+    res.json([
+      {
+        _id: 't-1',
+        tenantName: 'RV College of Engineering',
+        domain: 'rvce.edu.in',
+        subdomain: 'rvce',
+        plan: 'Enterprise',
+        maxUsers: 5000,
+        usedUsers: 4200,
+        mrrAmount: 150000,
+        status: 'Active',
+        adminEmail: 'admin@rvce.edu.in'
+      },
+      {
+        _id: 't-2',
+        tenantName: 'MediaCell Institute of Tech',
+        domain: 'mediacell.edu.in',
+        subdomain: 'mediacell',
+        plan: 'Professional',
+        maxUsers: 2500,
+        usedUsers: 1850,
+        mrrAmount: 95000,
+        status: 'Active',
+        adminEmail: 'principal@mediacell.edu.in'
+      },
+      {
+        _id: 't-3',
+        tenantName: 'Delhi Public School Bangalore',
+        domain: 'dpsbangalore.edu.in',
+        subdomain: 'dpsb',
+        plan: 'Starter',
+        maxUsers: 1000,
+        usedUsers: 890,
+        mrrAmount: 45000,
+        status: 'Active',
+        adminEmail: 'principal@dpsb.edu.in'
+      }
+    ]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/saas/tenants/onboard', async (req, res) => {
+  try {
+    const { tenantName, domain, subdomain, plan, maxUsers, adminEmail } = req.body;
+    if (!tenantName || !domain || !subdomain || !adminEmail) {
+      return res.status(400).json({ message: 'Missing required SaaS tenant parameters' });
+    }
+
+    const planTier = plan || 'Enterprise';
+    const mrr = planTier === 'Enterprise' ? 150000 : planTier === 'Professional' ? 95000 : 45000;
+
+    let tenant = {
+      tenantName,
+      domain,
+      subdomain,
+      plan: planTier,
+      maxUsers: parseInt(maxUsers) || 5000,
+      usedUsers: 1,
+      mrrAmount: mrr,
+      status: 'Active',
+      adminEmail
+    };
+
+    if (isMongoConnected) {
+      tenant = await SaaSTenant.create(tenant);
+    }
+
+    res.status(201).json({ message: `Tenant Institution "${tenantName}" Onboarded Successfully! 🏢`, tenant });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/saas/metrics', async (req, res) => {
+  try {
+    res.json({
+      totalMRR: '₹4,50,000 / mo',
+      activeTenants: 12,
+      totalActiveLicenses: '24,500 Students',
+      avgRenewalRate: '98.4%'
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// IN-HOUSE LMS (SELF-HOSTED) INFRASTRUCTURE ENDPOINTS
+// ═══════════════════════════════════════════════════
+app.get('/api/in-house/status', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const config = await SelfHostedConfig.findOne({});
+      if (config) return res.json(config);
+    }
+
+    res.json({
+      deploymentType: 'SelfHosted',
+      serverStatus: 'Online',
+      cpuUsagePct: 24,
+      ramUsagePct: 28,
+      diskUsagePct: 35,
+      securityPatchVersion: 'v4.8.2-LMS-SECURE',
+      backupLogs: [
+        { backupId: 'DUMP-20260803-01', sizeMb: 42.5, timestamp: new Date() },
+        { backupId: 'DUMP-20260802-01', sizeMb: 41.8, timestamp: new Date(Date.now() - 86400000) }
+      ]
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/in-house/backup', async (req, res) => {
+  try {
+    const backupId = 'DUMP-' + new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 12);
+    const newLog = { backupId, sizeMb: 43.2, timestamp: new Date() };
+
+    if (isMongoConnected) {
+      let cfg = await SelfHostedConfig.findOne({});
+      if (!cfg) cfg = new SelfHostedConfig({});
+      cfg.backupLogs.unshift(newLog);
+      cfg.lastBackupTimestamp = new Date();
+      await cfg.save();
+    }
+
+    res.status(201).json({ message: `Automated Database Backup "${backupId}" Completed! 💾`, backup: newLog });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/in-house/toggle-maintenance', async (req, res) => {
+  try {
+    let newStatus = 'Online';
+    if (isMongoConnected) {
+      let cfg = await SelfHostedConfig.findOne({});
+      if (!cfg) cfg = new SelfHostedConfig({});
+      cfg.serverStatus = cfg.serverStatus === 'Online' ? 'Maintenance' : 'Online';
+      newStatus = cfg.serverStatus;
+      await cfg.save();
+    }
+
+    res.json({ message: `In-House Server Status updated to: ${newStatus}`, status: newStatus });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/in-house/switch-deployment', async (req, res) => {
+  try {
+    const { mode } = req.body;
+    let target = mode || 'SelfHosted';
+
+    if (isMongoConnected) {
+      let cfg = await SelfHostedConfig.findOne({});
+      if (!cfg) cfg = new SelfHostedConfig({});
+      cfg.deploymentType = target;
+      await cfg.save();
+    }
+
+    res.json({ message: `Deployment Mode switched to: ${target}`, deploymentType: target });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Root Route
 app.get('/', (req, res) => {
   res.send('🎓 RV Learning Hub LMS API Server Running');
@@ -923,4 +2445,5 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
 }
 
 module.exports = app;
+
 

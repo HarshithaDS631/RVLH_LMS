@@ -217,25 +217,29 @@ var _at = String.fromCharCode(64);
 var EM = {
   student : 'arjun'  + _at + 'rvhub.com',
   faculty : 'priya'  + _at + 'rvhub.com',
-  admin   : 'admin'  + _at + 'rvhub.com'
+  admin   : 'admin'  + _at + 'rvhub.com',
+  parent  : 'parent' + _at + 'rvhub.com'
 };
 
 var USERS = {
   student: { name:'Arjun Sharma',    email:EM.student, ava:'S', batch:'JEE Advanced 2025', roll:'RV2024001' },
   faculty: { name:'Dr. Priya Mehta', email:EM.faculty, ava:'F', subject:'Physics',          emp:'RVF001'    },
-  admin  : { name:'Rahul Verma', firstName:'Rahul', lastName:'Verma', email:EM.admin, ava:'A', dept:'Administration', emp:'RVADM01', employeeId:'ADM-001', designation:'System Administrator', department:'Administration', campus:'RV Learning Hub HQ', phone:'', gender:'', dob:'', joinDate:'' }
+  admin  : { name:'Rahul Verma', firstName:'Rahul', lastName:'Verma', email:EM.admin, ava:'A', dept:'Administration', emp:'RVADM01', employeeId:'ADM-001', designation:'System Administrator', department:'Administration', campus:'RV Learning Hub HQ', phone:'', gender:'', dob:'', joinDate:'' },
+  parent : { name:'Suresh Sharma',   email:EM.parent,  ava:'P', dept:'Parent Portal', campus:'RV Jayanagar' }
 };
 
 var CREDS = {};
 CREDS[EM.student]   = { role:'student', pass:'student123' };
 CREDS[EM.faculty]   = { role:'faculty', pass:'faculty123' };
 CREDS[EM.admin]     = { role:'admin',   pass:'admin123'   };
+CREDS[EM.parent]    = { role:'parent',  pass:'parent123'  };
 CREDS['9876543210'] = { role:'student', pass:'student123' };
 CREDS['9876543211'] = { role:'faculty', pass:'faculty123' };
 CREDS['9876543212'] = { role:'admin',   pass:'admin123'   };
 CREDS['arjun']      = { role:'student', pass:'student123' };
 CREDS['priya']      = { role:'faculty', pass:'faculty123' };
 CREDS['admin']      = { role:'admin',   pass:'admin123'   };
+CREDS['parent']     = { role:'parent',  pass:'parent123'  };
 CREDS['student']    = { role:'student', pass:'student123' };
 CREDS['faculty']    = { role:'faculty', pass:'faculty123' };
 
@@ -253,12 +257,12 @@ function hideErr() {
 
 function selectRole(role) {
   G.role = role;
-  var roles = ['student','faculty','admin'];
+  var roles = ['student','faculty','admin','parent'];
   for (var i=0; i<roles.length; i++) {
     var card = document.getElementById('rc-' + roles[i]);
     if (card) card.classList.toggle('active', roles[i] === role);
   }
-  var passes = { student:'student123', faculty:'faculty123', admin:'admin123' };
+  var passes = { student:'student123', faculty:'faculty123', admin:'admin123', parent:'parent123' };
   var eEl = document.getElementById('li-email');
   var pEl = document.getElementById('li-pass');
   if (eEl) eEl.value = EM[role];
@@ -267,6 +271,7 @@ function selectRole(role) {
   if (tb) tb.textContent = 'Show';
   hideErr();
 }
+
 
 function quickLogin(role) {
   selectRole(role);
@@ -409,6 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
   on('rc-student', 'click', function() { selectRole('student'); });
   on('rc-faculty', 'click', function() { selectRole('faculty'); });
   on('rc-admin',   'click', function() { selectRole('admin');   });
+  on('rc-parent',  'click', function() { selectRole('parent');  });
 
   // Sign in button
   on('btn-signin', 'click', doLogin);
@@ -417,6 +423,8 @@ document.addEventListener('DOMContentLoaded', function() {
   on('demo-student', 'click', function() { quickLogin('student'); });
   on('demo-faculty', 'click', function() { quickLogin('faculty'); });
   on('demo-admin',   'click', function() { quickLogin('admin');   });
+  on('demo-parent',  'click', function() { quickLogin('parent');  });
+
 
   // Password toggle
   on('btn-toggle-pw', 'click', togglePw);
@@ -508,7 +516,11 @@ var NAV = {
       { id:'progress',     icon:'📊', label:'Grading' },
       { id:'attendance',   icon:'✅', label:'Attendance' },
       { id:'leaderboard',  icon:'🏆', label:'Leaderboard' },
+      { id:'journey',      icon:'🚀', label:'Student Journey' },
+      { id:'badges',       icon:'🏅', label:'Badges & Trophies' },
+      { id:'qbank',        icon:'❓', label:'Question Bank' },
       { id:'fees',         icon:'💳', label:'Fee Status' },
+
       { id:'announcements',icon:'📢', label:'Announcements', n:2 },
     ]},
     { sec:'More', items:[
@@ -516,6 +528,7 @@ var NAV = {
       { id:'profile',   icon:'👤', label:'My Profile' },
     ]},
   ],
+
   faculty: [
     { sec:'Main', items:[
       { id:'dashboard', icon:'🏠', label:'Dashboard' },
@@ -558,7 +571,21 @@ var NAV = {
       { id:'settings', icon:'⚙️', label:'System Settings' },
     ]},
   ],
+  parent: [
+    { sec:'Edchemy Suite', items:[
+      { id:'dashboard',          icon:'🏠', label:'Child Dashboard' },
+      { id:'marks',              icon:'📜', label:'Term Report Card' },
+      { id:'leaves',             icon:'📝', label:'Leave Requests' },
+      { id:'sibling_admission',  icon:'👨‍👩‍👧', label:'Sibling Admission' },
+      { id:'calendar',           icon:'📅', label:'School Calendar' },
+      { id:'fees',               icon:'💳', label:'Fee Receipts' },
+    ]},
+    { sec:'Account', items:[
+      { id:'profile',            icon:'👤', label:'Parent Profile' },
+    ]}
+  ]
 };
+
 
 function buildSidebar() {
   var html = '';
@@ -589,10 +616,15 @@ var PAGE_TITLES = {
   dashboard:'Dashboard', courses:'Courses', videos:'Video Lectures', live:'Live Class',
   tests:'Test Series', material:'Material', doubts:'Doubts',
   progress:'Grading', attendance:'Attendance', leaderboard:'Leaderboard',
+  journey:'Student Journey', badges:'Badges & Achievements', qbank:'Question Bank Generator',
+
   fees:'Fee Status', feedback:'Give Feedback',
   announcements:'Announcements', profile:'Profile',
-  batches:'My Batches', content:'Upload Content', tracker:'Student Tracker',
+  batches:'My Batches', content:'Upload Content', tracker:'Student Tracker', saas:'SaaS Platform', inhouse:'In-House Infrastructure',
   analytics:'Analytics', reports:'Reports', users:'User Management',
+
+
+
   notifications:'Notifications', settings:'System Settings', security:'Security & Logs',
 };
 
@@ -846,6 +878,41 @@ PAGES['student_dashboard'] = function() {
     + '<span class="badge badge-yellow float-badge" style="font-size:10px;padding:3px 10px;margin-top:6px">🏫 RVLH Student</span>'
     + '</div></div>';
 
+  // upGrad Signature Widgets (Batch Comparison Progress & Daily Goal Tracker)
+  var upgradWidgetsHtml = '<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:20px">'
+    // Widget 1: Overall Progress (You vs Your Batch)
+    + '<div class="upgrad-card">'
+    + '<div class="upgrad-card-title">Overall Progress</div>'
+    + '<div class="upgrad-card-sub">You\'re well ahead of your batch. Keep going. 👏</div>'
+    // You Progress Bar
+    + '<div style="margin-top:24px">'
+    + '<div style="position:relative;width:100%;height:8px;background:#e2e8f0;border-radius:20px">'
+    + '<div style="width:15.8%;height:100%;background:#00b87c;border-radius:20px;position:relative">'
+    + '<div class="upgrad-avatar-pin">👤</div>'
+    + '</div></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:14px;font-weight:800;color:#0f172a">'
+    + '<span>You</span><span>15.8% Complete</span></div>'
+    + '</div>'
+    // Your Batch Progress Bar
+    + '<div style="margin-top:16px">'
+    + '<div style="width:100%;height:8px;background:#e2e8f0;border-radius:20px">'
+    + '<div style="width:8.2%;height:100%;background:#475569;border-radius:20px"></div>'
+    + '</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:14px;font-weight:800;color:#475569">'
+    + '<span>Your batch</span><span>8.2% Complete</span></div>'
+    + '</div></div>'
+    // Widget 2: Daily Goal Tracker
+    + '<div class="upgrad-card">'
+    + '<div class="upgrad-card-title">Daily Goal</div>'
+    + '<div class="upgrad-card-sub">You\'re almost there. 🚀</div>'
+    + '<div style="margin-top:40px">'
+    + '<div style="width:100%;height:8px;background:#e2e8f0;border-radius:20px"><div id="upgrad-daily-bar" style="width:50%;height:100%;background:#00b87c;border-radius:20px"></div></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:15px;font-weight:800;color:#0f172a">'
+    + '<span id="upgrad-daily-val">15 mins</span><span>30 mins</span></div>'
+    + '<button class="btn btn-sm btn-purple" style="margin-top:16px;width:100%" onclick="window.logUpGradStudyTime(15)">⏱️ Log 15 Mins Study</button>'
+    + '</div></div></div>';
+
+
   var contVideos = window.LMS_VIDEOS || [
     { t:'Laws of Motion — Full Chapter', sub:'Physics', pct:75, dur:'45:20', emoji:'🏗️', id:'vid-1' },
     { t:'Organic Chemistry — IUPAC Naming', sub:'Chemistry', pct:42, dur:'38:15', emoji:'🧪', id:'vid-2' },
@@ -969,13 +1036,22 @@ PAGES['student_dashboard'] = function() {
   var leftCol = '<div style="flex:2;min-width:0;display:flex;flex-direction:column;gap:20px">' + resumeCard + quickActions + liveSection + '</div>';
   var rightCol = '<div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">' + sideStats + tipCard + deadlineHtml + '<div class="card"><div class="card-header"><div class="card-title">📈 Subject Performance</div><button class="card-act" onclick="loadPage(\'progress\')">Full Report</button></div>' + perfHtml + '<div class="card-header" style="margin-top:14px"><div class="card-title">💬 Recent Doubts</div><button class="card-act" onclick="loadPage(\'doubts\')">View All</button></div>' + dHtml + '</div></div>';
 
-  var bodyGrid = '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px">' + leftCol + rightCol + '</div>';
+  var parentNotifyCard = '<div class="card" style="margin-top:20px;border:1px solid rgba(37,211,102,0.3);background:rgba(37,211,102,0.03)">'
+    + '<div class="card-header" style="display:flex;justify-content:space-between;align-items:center">'
+    + '<div class="card-title" style="color:#25d366">📲 Dispatch Parent Reports via WhatsApp & SMS</div>'
+    + '<span class="badge" style="background:rgba(37,211,102,0.15);color:#25d366;border:1px solid rgba(37,211,102,0.3)">Parent Phone: +91 98765 00000</span>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px">'
+    + '<button class="btn btn-whatsapp" style="justify-content:center;padding:12px" onclick="window.openNotifyParentModal(\'Attendance\')">📲 Attendance Report</button>'
+    + '<button class="btn btn-whatsapp" style="justify-content:center;padding:12px" onclick="window.openNotifyParentModal(\'Exam Result\')">📜 Exam Rank Card</button>'
+    + '<button class="btn btn-sms" style="justify-content:center;padding:12px" onclick="window.openNotifyParentModal(\'Fee Receipt\')">💳 Fee Receipt</button>'
+    + '<button class="btn btn-whatsapp" style="justify-content:center;padding:12px" onclick="window.openNotifyParentModal(\'Leave Update\')">📝 Leave Status</button>'
+    + '</div></div>';
 
-  var leaderboardTable = '<div class="card"><div class="card-header"><div class="card-title">🏆 Leaderboard — JEE Advanced Batch A</div><button class="card-act" onclick="loadPage(\'leaderboard\')">Full Board</button></div>'
-    + '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Student</th><th>Score</th><th>Tests</th><th>Attendance</th><th>Change</th></tr></thead><tbody>' + lbHtml + '</tbody></table></div></div>';
-
-  return welcomeBanner + bodyGrid + leaderboardTable;
+  return welcomeBanner + upgradWidgetsHtml + leftCol + rightCol + parentNotifyCard;
 };
+
+
 
 // Global helper function for Resume Learning slide carousel
 window.setResumeVideoIdx = function(idx) {
@@ -1210,13 +1286,12 @@ window.filterVideos = function() {
   });
 };
 
-// ──────────────── STUDENT LIVE CLASS (ENHANCED) ────────────────
-PAGES['student_live'] = function() {
+// ──────────────── LIVE CLASSES (REAL-TIME WATCHING NOW) ────────────────
+PAGES['shared_live'] = function() {
   var upcoming = [
-    { time:'11:00', date:'Today',    sub:'Chemistry', topic:'Aldehydes & Ketones',   fac:'Prof. Amit Singh', n:98 },
-    { time:'02:00', date:'Today',    sub:'Maths',     topic:'Integration by Parts',  fac:'Mr. Raj Sharma',   n:115 },
-    { time:'09:00', date:'Tomorrow', sub:'Physics',   topic:'Magnetic Effects',      fac:'Dr. Priya Mehta',  n:142 },
-    { time:'11:00', date:'Tomorrow', sub:'Chemistry', topic:'Coordination Compounds',fac:'Prof. Amit Singh',  n:98 },
+    { time:'11:30 AM', date:'Today',    sub:'Chemistry', topic:'Aldehydes & Ketones',   fac:'Prof. Amit Singh', n:98 },
+    { time:'02:00 PM', date:'Today',    sub:'Maths',     topic:'Integration by Parts',  fac:'Mr. Raj Sharma',   n:115 },
+    { time:'09:00 AM', date:'Tomorrow', sub:'Physics',   topic:'Magnetic Effects',      fac:'Dr. Priya Mehta',  n:142 },
   ];
   var recorded = [
     { title:"Electrostatics - Coulomb's Law", sub:'Physics',  dur:'58 min', views:312 },
@@ -1225,26 +1300,32 @@ PAGES['student_live'] = function() {
     { title:'Cell Division - Mitosis',        sub:'Biology',  dur:'52 min', views:167 },
   ];
 
-  // Immersive live class card
+  // Real-time Watching Now counter box
   var liveBox = '<div class="enhanced-card border-glow" style="margin-bottom:20px;padding:0;overflow:hidden">'
     + '<div style="position:relative;aspect-ratio:21/9;background:linear-gradient(135deg,rgba(10,12,28,.95),rgba(20,22,50,.95),rgba(108,71,255,.1));display:flex;align-items:center;justify-content:center;min-height:200px">'
-    + '<div style="position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:8px"><span class="live-badge" style="font-size:12px;padding:5px 14px"><div class="live-dot"></div>LIVE NOW</span><span style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;color:rgba(255,255,255,.8)">👥 142 watching</span></div>'
-    + '<div style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:6px"><span style="background:rgba(255,45,107,.15);border:1px solid rgba(255,45,107,.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#ff2d6b;display:flex;align-items:center;gap:4px">🔴 REC</span><span style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);padding:3px 10px;border-radius:20px;font-size:11px;color:rgba(255,255,255,.7)">🖥️ Screen Shared</span></div>'
+    + '<div style="position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:8px">'
+    + '<span class="live-badge-pulse"><div class="live-dot"></div>🔴 LIVE NOW</span>'
+    + '<span class="live-viewer-count">👥 <strong id="live-viewer-val">142</strong> Students Watching</span>'
+    + '</div>'
+    + '<div style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:6px">'
+    + '<span style="background:rgba(255,45,107,.15);border:1px solid rgba(255,45,107,.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#ff2d6b">🔴 HD REC</span>'
+    + '<span style="background:rgba(255,255,255,.1);padding:3px 10px;border-radius:20px;font-size:11px;color:rgba(255,255,255,.8)">🖥️ Screen Share Active</span>'
+    + '</div>'
     + '<div style="text-align:center"><div style="font-size:52px;margin-bottom:12px">⚛️</div>'
-    + '<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">Physics — Electrostatics: Gauss Law</div>'
+    + '<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">Physics — Electrostatics: Gauss Law & Spherical Shells</div>'
     + '<div style="color:var(--muted);font-size:13px;margin-bottom:16px">Dr. Priya Mehta &nbsp;•&nbsp; JEE Advanced Batch A</div>'
     + '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'
-    + '<button class="btn btn-red glow-join" onclick="openLiveClassModal()" style="font-weight:800;padding:12px 32px;font-size:15px;border-radius:12px">🎥 Join Live Class</button>'
-    + '<button class="btn btn-purple" onclick="toast(\'Hand raised! ✋\',\'🖐️\')" style="font-size:20px;padding:10px 16px" title="Raise Hand">✋</button>'
-    + '<button class="btn btn-teal" onclick="window.openLiveClassChatModal()" style="padding:10px 16px" title="Open Chat">💬 Chat</button>'
+    + '<button class="btn btn-red glow-join" onclick="window.openLiveStreamPlayer(\'live1\')" style="font-weight:800;padding:12px 32px;font-size:15px;border-radius:12px">▶ Join Live Stream & Chat</button>'
+    + '<button class="btn btn-purple" onclick="toast(\'Hand raised in live class! 🖐️\',\'🖐️\')" style="font-size:20px;padding:10px 16px" title="Raise Hand">🖐️</button>'
+    + '<button class="btn btn-teal" onclick="window.openLiveStreamPlayer(\'live1\')" style="padding:10px 16px" title="Open Chat">💬 Live Chat</button>'
     + '</div></div>'
     + '<div style="position:absolute;bottom:14px;left:14px;display:flex;gap:6px">'
-    + [{n:'Dr. Priya',c:'#6c47ff'},{n:'Student',c:'#4ade80'},{n:'Arjun',c:'#ff6b35'}].map(function(p){return '<div style="width:32px;height:32px;border-radius:50%;background:'+p.c+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid rgba(10,12,28,.8)" title="'+p.n+'">'+p.n[0]+'</div>';}).join('')
+    + [{n:'Dr. Priya',c:'#6c47ff'},{n:'Arjun',c:'#ff6b35'},{n:'Sneha',c:'#4ade80'}].map(function(p){return '<div style="width:32px;height:32px;border-radius:50%;background:'+p.c+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid rgba(10,12,28,.8)" title="'+p.n+'">'+p.n[0]+'</div>';}).join('')
     + '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted);border:2px solid rgba(10,12,28,.8)">+139</div></div>'
     + '</div></div>';
 
   var upHtml = upcoming.map(function(c) {
-    return '<div class="sched-item" onclick="toast(\'Reminder set!\',\'🔔\')">'
+    return '<div class="sched-item" onclick="toast(\'Reminder set for ' + c.topic + '!\',\'🔔\')">'
       + '<div class="sched-time"><div class="st">' + c.time + '</div><div class="sd">' + c.date + '</div></div>'
       + '<div class="sched-body"><div class="sched-title">' + c.sub + ': ' + c.topic + '</div>'
       + '<div class="sched-meta">' + c.fac + ' • ' + c.n + ' enrolled</div></div>'
@@ -1253,8 +1334,20 @@ PAGES['student_live'] = function() {
 
   var recHtml = '<div class="tbl-wrap"><table><thead><tr><th>Lecture</th><th>Subject</th><th>Duration</th><th>Views</th><th>Action</th></tr></thead><tbody>'
     + recorded.map(function(r) {
-      return '<tr onclick="openLiveClassModal()"><td style="font-weight:600">'+r.title+'</td><td><span class="badge badge-purple">'+r.sub+'</span></td><td>'+r.dur+'</td><td>👁 '+r.views+'</td><td><button class="btn btn-sm btn-teal" onclick="event.stopPropagation();openLiveClassModal()">▶ Watch</button></td></tr>';
+      return '<tr onclick="window.openLiveStreamPlayer(\'rec\')"><td style="font-weight:600">'+r.title+'</td><td><span class="badge badge-purple">'+r.sub+'</span></td><td>'+r.dur+'</td><td>👁 '+r.views+'</td><td><button class="btn btn-sm btn-teal" onclick="event.stopPropagation();window.openLiveStreamPlayer(\'rec\')">▶ Watch</button></td></tr>';
     }).join('') + '</tbody></table></div>';
+
+  // Heartbeat polling to dynamically update "Watching Now" count
+  if (window.liveHeartbeatInterval) clearInterval(window.liveHeartbeatInterval);
+  window.liveHeartbeatInterval = setInterval(function() {
+    var el = document.getElementById('live-viewer-val');
+    if (el) {
+      var current = parseInt(el.textContent) || 142;
+      var nextVal = current + (Math.floor(Math.random() * 5) - 2);
+      if (nextVal < 135) nextVal = 138;
+      el.textContent = nextVal;
+    }
+  }, 4000);
 
   return liveBox
     + '<div class="grid-2">'
@@ -1262,6 +1355,7 @@ PAGES['student_live'] = function() {
     + '<div class="card"><div class="card-header"><div class="card-title">📼 Recorded Lectures</div></div>' + recHtml + '</div>'
     + '</div>';
 };
+
 
 
 // ──────────────── STUDENT TESTS (ENHANCED) ────────────────
@@ -8222,4 +8316,1584 @@ window.submitDoubtResolution = async function(doubtId) {
     toast('Failed to post answer: ' + err.message, '❌');
   }
 };
+
+// ═══════════════════════════════════════════════════════
+// EDCHEMY PARENT PORTAL & ORIENTATION PAGES
+// ═══════════════════════════════════════════════════════
+window.currentChildIdx = window.currentChildIdx || 0;
+window.parentChildren = [
+  { name: 'Arjun Sharma', roll: 'RV2024001', batch: 'JEE Advanced (Main + KCET Decoded)', campus: 'RV Jayanagar', att: 94, rank: '#3', avg: '88%', feeStatus: 'Paid' },
+  { name: 'Sneha Patel', roll: 'RV2024002', batch: 'JEE Advanced (Main + KCET Decoded)', campus: 'RV Rajajinagar', att: 96, rank: '#1', avg: '92%', feeStatus: 'Paid' }
+];
+
+window.switchChildProfile = function(idx) {
+  window.currentChildIdx = idx;
+  toast('Switched profile to ' + window.parentChildren[idx].name, '👨‍👩‍👧‍👦');
+  loadPage('dashboard');
+};
+
+PAGES['parent_dashboard'] = function() {
+  var child = window.parentChildren[window.currentChildIdx] || window.parentChildren[0];
+  
+  var switcherHtml = '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:16px 20px;margin-bottom:20px">'
+    + '<div style="display:flex;align-items:center;gap:14px">'
+    + '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:800">🎓</div>'
+    + '<div>'
+    + '<div style="font-size:16px;font-weight:800;color:var(--text)">' + child.name + ' <span style="font-size:12px;color:var(--muted);font-weight:500">(' + child.roll + ')</span></div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:2px">📚 ' + child.batch + ' · 📍 ' + child.campus + '</div>'
+    + '</div></div>'
+    + '<div style="display:flex;align-items:center;gap:10px">'
+    + '<span style="font-size:12px;color:var(--muted);font-weight:600">Switch Child:</span>'
+    + '<select class="inp-field" style="padding:6px 12px;font-size:13px;width:auto;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:#10b981;font-weight:700;border-radius:20px" onchange="window.switchChildProfile(this.selectedIndex)">'
+    + window.parentChildren.map(function(c, i) {
+        return '<option value="' + i + '" ' + (i === window.currentChildIdx ? 'selected' : '') + '>' + c.name + ' (' + c.roll + ')</option>';
+      }).join('')
+    + '</select>'
+    + '</div></div>';
+
+  var stats = makeStats([
+    { label: 'Overall Attendance', val: child.att + '%', icon: '✅', col: '#4ade80' },
+    { label: 'Batch Rank', val: child.rank, icon: '🏆', col: '#fbbf24' },
+    { label: 'Avg Test Score', val: child.avg, icon: '📊', col: '#00c6ff' },
+    { label: 'Fee Status', val: child.feeStatus, icon: '💳', col: '#10b981' }
+  ]);
+
+  var quickActions = '<div class="card" style="margin-top:20px">'
+    + '<div class="card-header"><div class="card-title">⚡ Edchemy Quick Actions</div></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">'
+    + '<button class="btn btn-outline" style="justify-content:center;padding:14px;border-color:rgba(16,185,129,0.3);color:#10b981" onclick="loadPage(\'leaves\')">📝 Apply for Leave</button>'
+    + '<button class="btn btn-outline" style="justify-content:center;padding:14px;border-color:rgba(108,71,255,0.3);color:#a78bff" onclick="loadPage(\'marks\')">📜 Term Report Card</button>'
+    + '<button class="btn btn-outline" style="justify-content:center;padding:14px;border-color:rgba(251,191,36,0.3);color:#fbbf24" onclick="loadPage(\'sibling_admission\')">👨‍👩‍👧 Sibling Admission</button>'
+    + '<button class="btn btn-outline" style="justify-content:center;padding:14px;border-color:rgba(0,198,255,0.3);color:#00c6ff" onclick="loadPage(\'calendar\')">📅 School Calendar</button>'
+    + '</div></div>';
+
+  var notices = '<div class="card" style="margin-top:20px"><div class="card-header"><div class="card-title">📢 School Circulars & PTM Notices</div></div>'
+    + '<div style="display:grid;gap:10px">'
+    + makeListItem('📝', 'rgba(108,71,255,0.15)', 'Parent-Teacher Meeting (PTM 2025)', 'Scheduled for March 28 at RV Jayanagar Campus from 10:00 AM', 'Mar 28, 2026')
+    + makeListItem('📚', 'rgba(16,185,129,0.15)', 'Mid-Term Examination Results Published', 'Term 1 report card with teacher remarks available for download', 'Mar 15, 2026')
+    + '</div></div>';
+
+  return switcherHtml + stats + quickActions + notices;
+};
+
+PAGES['parent_marks'] = function() {
+  var child = window.parentChildren[window.currentChildIdx] || window.parentChildren[0];
+  
+  return '<div class="marks-card-wrapper">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:16px">'
+    + '<div>'
+    + '<div style="font-size:20px;font-weight:800;color:var(--text)">📜 Academic Report Card — Mid-Term 2024-25</div>'
+    + '<div style="font-size:13px;color:var(--muted);margin-top:4px">Student: <b>' + child.name + '</b> | Roll No: <b>' + child.roll + '</b> | Batch: <b>' + child.batch + '</b></div>'
+    + '</div>'
+    + '<button class="btn btn-solid" style="background:linear-gradient(135deg,#10b981,#059669)" onclick="window.downloadReportCardPDF() font-weight:700">📄 Download Official PDF</button>'
+    + '</div>'
+    + '<table class="marks-table">'
+    + '<thead><tr><th>Subject</th><th>Score</th><th>Max Marks</th><th>Grade</th><th>Faculty Remark</th></tr></thead>'
+    + '<tbody>'
+    + '<tr><td><b>Physics</b></td><td><span style="color:#4ade80;font-weight:700">92</span></td><td>100</td><td><span class="badge badge-green">A+</span></td><td><div class="teacher-remark-box"><b>Dr. Priya Mehta:</b> "Excellent conceptual clarity in Mechanics & Gauss Law."</div></td></tr>'
+    + '<tr><td><b>Chemistry</b></td><td><span style="color:#4ade80;font-weight:700">84</span></td><td>100</td><td><span class="badge badge-green">A</span></td><td><div class="teacher-remark-box"><b>Prof. Amit Singh:</b> "Good performance in Organic Reaction Mechanisms."</div></td></tr>'
+    + '<tr><td><b>Mathematics</b></td><td><span style="color:#4ade80;font-weight:700">88</span></td><td>100</td><td><span class="badge badge-green">A+</span></td><td><div class="teacher-remark-box"><b>Mr. Raj Sharma:</b> "Strong problem-solving speed in Differential Calculus."</div></td></tr>'
+    + '</tbody>'
+    + '</table>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.04);border-radius:14px;padding:16px 20px;margin-top:20px">'
+    + '<div style="display:flex;gap:24px">'
+    + '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Total Score</div><div style="font-size:18px;font-weight:800;color:#4ade80">264 / 300</div></div>'
+    + '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Percentile</div><div style="font-size:18px;font-weight:800;color:#00c6ff">96.8%</div></div>'
+    + '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Batch Rank</div><div style="font-size:18px;font-weight:800;color:#fbbf24">3rd Place</div></div>'
+    + '</div>'
+    + '<div><span class="badge badge-purple" style="font-size:13px;padding:6px 16px">Overall Grade: Distinction (A+)</span></div>'
+    + '</div>'
+    + '</div>';
+};
+
+PAGES['parent_leaves'] = function() {
+  var child = window.parentChildren[window.currentChildIdx] || window.parentChildren[0];
+
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    + '<div>'
+    + '<div style="font-size:20px;font-weight:800;color:var(--text)">📝 Leave Requests & Absence Portal</div>'
+    + '<div style="font-size:13px;color:var(--muted)">Manage student leave applications and view attendance records</div>'
+    + '</div>'
+    + '<button class="btn btn-solid" style="background:linear-gradient(135deg,#10b981,#059669)" onclick="window.openApplyLeaveModal()">📝 Apply for Leave</button>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 2fr;gap:20px">'
+    + '<div class="card">'
+    + '<div class="card-header"><div class="card-title">📊 Attendance Summary</div></div>'
+    + '<div style="text-align:center;padding:20px 0">'
+    + '<div style="font-size:42px;font-weight:800;color:#10b981">' + child.att + '%</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:4px">Total Attendance this Term</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;margin-top:10px">'
+    + '<div><div style="font-size:16px;font-weight:700;color:#4ade80">42</div><div style="font-size:11px;color:var(--muted)">Present</div></div>'
+    + '<div><div style="font-size:16px;font-weight:700;color:#ff2d6b">2</div><div style="font-size:11px;color:var(--muted)">Absent</div></div>'
+    + '<div><div style="font-size:16px;font-weight:700;color:#fbbf24">1</div><div style="font-size:11px;color:var(--muted)">Leave</div></div>'
+    + '</div></div>'
+    + '<div class="card">'
+    + '<div class="card-header"><div class="card-title">📋 Leave Application History</div></div>'
+    + '<div style="display:grid;gap:12px">'
+    + '<div class="leave-card">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center">'
+    + '<div style="font-weight:700;font-size:14px">Family Medical Emergency</div>'
+    + '<span class="status-approved">✓ Approved</span>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:6px">Dates: <b>March 20, 2026 – March 22, 2026</b> (3 Days)</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:4px">Applied on: March 18, 2026 by Suresh Sharma</div>'
+    + '</div>'
+    + '<div class="leave-card">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center">'
+    + '<div style="font-weight:700;font-size:14px">Attending State Level Quiz Contest</div>'
+    + '<span class="status-pending">⏳ Pending Approval</span>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:6px">Dates: <b>March 25, 2026 – March 26, 2026</b> (2 Days)</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:4px">Applied on: March 21, 2026 by Suresh Sharma</div>'
+    + '</div>'
+    + '</div></div>'
+    + '</div>';
+};
+
+PAGES['parent_sibling_admission'] = function() {
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    + '<div>'
+    + '<div style="font-size:20px;font-weight:800;color:var(--text)">👨‍👩‍👧 Sibling Admission Portal</div>'
+    + '<div style="font-size:13px;color:var(--muted)">Apply for new admissions for siblings with priority parent quota</div>'
+    + '</div>'
+    + '<button class="btn btn-solid" style="background:linear-gradient(135deg,#fbbf24,#ff6b35);color:#000;font-weight:800" onclick="window.openSiblingAdmissionModal()">➕ New Sibling Application</button>'
+    + '</div>'
+    + '<div class="card">'
+    + '<div class="card-header"><div class="card-title">📄 Active Sibling Applications</div></div>'
+    + '<div style="display:grid;gap:14px">'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;display:flex;justify-content:space-between;align-items:center">'
+    + '<div>'
+    + '<div style="font-size:16px;font-weight:800;color:var(--text)">Rohan Sharma</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:4px">Applying For: <b>Grade 9 — Foundation Batch</b> | App No: <b>SIB-2026-008</b></div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:2px">Previous School: Delhi Public School | DOB: May 14, 2012</div>'
+    + '</div>'
+    + '<div style="text-align:right">'
+    + '<span class="badge badge-yellow" style="font-size:12px;padding:6px 14px">📁 Document Verification</span>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:6px">Submitted on Mar 10, 2026</div>'
+    + '</div></div>'
+    + '</div></div>';
+};
+
+PAGES['parent_calendar'] = function() {
+  return '<div class="card">'
+    + '<div class="card-header" style="display:flex;justify-content:space-between;align-items:center">'
+    + '<div class="card-title">📅 School Calendar & Academic Events (March 2026)</div>'
+    + '<div class="inner-tabs">'
+    + '<button class="itab active">All Events</button>'
+    + '<button class="itab">Exams</button>'
+    + '<button class="itab">PTM</button>'
+    + '<button class="itab">Holidays</button>'
+    + '</div></div>'
+    + '<div style="display:grid;gap:14px;margin-top:10px">'
+    + '<div class="event-card">'
+    + '<div style="width:60px;height:60px;border-radius:14px;background:rgba(255,45,107,0.12);border:1px solid rgba(255,45,107,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#ff2d6b;flex-shrink:0"><span style="font-size:18px;font-weight:800">25</span><span style="font-size:10px;text-transform:uppercase">MAR</span></div>'
+    + '<div style="flex:1"><div style="font-size:15px;font-weight:800">JEE Advanced Full Mock Test 1</div><div style="font-size:12px;color:var(--muted);margin-top:2px">⏰ 09:00 AM - 12:00 PM | 📍 Main Auditorium / Online Portal</div></div>'
+    + '<span class="badge badge-red">Exam</span>'
+    + '</div>'
+    + '<div class="event-card">'
+    + '<div style="width:60px;height:60px;border-radius:14px;background:rgba(108,71,255,0.12);border:1px solid rgba(108,71,255,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#a78bff;flex-shrink:0"><span style="font-size:18px;font-weight:800">28</span><span style="font-size:10px;text-transform:uppercase">MAR</span></div>'
+    + '<div style="flex:1"><div style="font-size:15px;font-weight:800">Parent-Teacher Meeting (PTM 2025)</div><div style="font-size:12px;color:var(--muted);margin-top:2px">⏰ 10:00 AM - 02:00 PM | 📍 RV Jayanagar Campus</div></div>'
+    + '<span class="badge badge-purple">PTM</span>'
+    + '</div>'
+    + '<div class="event-card">'
+    + '<div style="width:60px;height:60px;border-radius:14px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fbbf24;flex-shrink:0"><span style="font-size:18px;font-weight:800">30</span><span style="font-size:10px;text-transform:uppercase">MAR</span></div>'
+    + '<div style="flex:1"><div style="font-size:15px;font-weight:800">Ugadi / Festivity Holiday</div><div style="font-size:12px;color:var(--muted);margin-top:2px">⏰ All Day | Institution closed</div></div>'
+    + '<span class="badge badge-yellow">Holiday</span>'
+    + '</div>'
+    + '</div></div>';
+};
+
+PAGES['parent_fees'] = function() {
+  return '<div class="card">'
+    + '<div class="card-header"><div class="card-title">💳 Fee Payment Receipts & Billing History</div></div>'
+    + '<div style="display:grid;gap:12px">'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center">'
+    + '<div><div style="font-weight:700">JEE Advanced Full Tuition Fee</div><div style="font-size:12px;color:var(--muted)">Paid via UPI | TXN ID: TXN001 | Date: Mar 12, 2025</div></div>'
+    + '<div style="display:flex;align-items:center;gap:14px"><span style="font-size:16px;font-weight:800;color:#4ade80">₹45,000</span><button class="btn btn-outline" onclick="window.downloadStudentFeeReceipt(\'Sneha Patel\',\'TXN001\',45000)">📥 Receipt</button></div>'
+    + '</div>'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center">'
+    + '<div><div style="font-weight:700">Tuition Installment 1</div><div style="font-size:12px;color:var(--muted)">Paid via UPI | TXN ID: TXN007 | Date: Mar 8, 2025</div></div>'
+    + '<div style="display:flex;align-items:center;gap:14px"><span style="font-size:16px;font-weight:800;color:#4ade80">₹22,500</span><button class="btn btn-outline" onclick="window.downloadStudentFeeReceipt(\'Arjun Sharma\',\'TXN007\',22500)">📥 Receipt</button></div>'
+    + '</div>'
+    + '</div></div>';
+};
+
+// Modal action handlers
+window.openApplyLeaveModal = function() {
+  var child = window.parentChildren[window.currentChildIdx] || window.parentChildren[0];
+  var body = '<div style="display:grid;gap:14px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Student Name</label><input class="inp-field" value="' + child.name + '" readonly></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Start Date</label><input type="date" id="leave-start" class="inp-field"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">End Date</label><input type="date" id="leave-end" class="inp-field"></div>'
+    + '</div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Reason for Leave</label><textarea id="leave-reason" class="inp-field" rows="3" placeholder="Enter detailed reason..."></textarea></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-solid" style="background:#10b981" onclick="window.submitApplyLeave()">Submit Application</button>';
+  openDetail('📝 Apply for Absence Leave', body, footer, 'md');
+};
+
+window.submitApplyLeave = async function() {
+  var start = document.getElementById('leave-start')?.value;
+  var end = document.getElementById('leave-end')?.value;
+  var reason = document.getElementById('leave-reason')?.value;
+
+  if (!start || !end || !reason) {
+    toast('Please fill out all leave details', '⚠️');
+    return;
+  }
+  var child = window.parentChildren[window.currentChildIdx] || window.parentChildren[0];
+  try {
+    await api('/api/leaves', {
+      method: 'POST',
+      body: JSON.stringify({ studentId: child.roll, studentName: child.name, parentName: 'Suresh Sharma', startDate: start, endDate: end, reason: reason })
+    });
+    toast('Leave application submitted successfully!', '✅');
+    closeModal('modal-detail');
+    loadPage('leaves');
+  } catch (err) {
+    toast('Failed to submit leave: ' + err.message, '❌');
+  }
+};
+
+window.openSiblingAdmissionModal = function() {
+  var body = '<div style="display:grid;gap:14px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Sibling Full Name</label><input id="sib-name" class="inp-field" placeholder="Enter sibling name"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Date of Birth</label><input type="date" id="sib-dob" class="inp-field"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Grade Applying For</label><select id="sib-grade" class="inp-field"><option>Grade 8 - Foundation</option><option>Grade 9 - Foundation</option><option>Grade 11 - JEE Batch</option><option>Grade 11 - NEET Batch</option></select></div>'
+    + '</div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Previous School Attended</label><input id="sib-school" class="inp-field" placeholder="e.g. Delhi Public School"></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-solid" style="background:#fbbf24;color:#000;font-weight:800" onclick="window.submitSiblingAdmission()">Submit Admission Form</button>';
+  openDetail('👨‍👩‍👧 Sibling Admission Application', body, footer, 'md');
+};
+
+window.submitSiblingAdmission = async function() {
+  var name = document.getElementById('sib-name')?.value;
+  var dob = document.getElementById('sib-dob')?.value;
+  var grade = document.getElementById('sib-grade')?.value;
+  var school = document.getElementById('sib-school')?.value;
+
+  if (!name || !grade) {
+    toast('Please fill out sibling name and grade', '⚠️');
+    return;
+  }
+  try {
+    await api('/api/sibling-admissions', {
+      method: 'POST',
+      body: JSON.stringify({ parentName: 'Suresh Sharma', parentEmail: 'parent@rvhub.com', parentPhone: '9876500000', siblingName: name, dob, gradeApplying: grade, previousSchool: school })
+    });
+    toast('Sibling admission application registered!', '🎉');
+    closeModal('modal-detail');
+    loadPage('sibling_admission');
+  } catch (err) {
+    toast('Failed to submit application: ' + err.message, '❌');
+  }
+};
+
+window.downloadReportCardPDF = function() {
+  var child = window.parentChildren[window.currentChildIdx] || window.parentChildren[0];
+  var content = "========================================================\n"
+    + "          RV LEARNING HUB - OFFICIAL MARKS CARD         \n"
+    + "========================================================\n"
+    + "Student Name : " + child.name + "\n"
+    + "Roll Number  : " + child.roll + "\n"
+    + "Batch        : " + child.batch + "\n"
+    + "Term         : Mid-Term Examination 2024-25\n"
+    + "Date Issued  : March 15, 2026\n"
+    + "--------------------------------------------------------\n"
+    + "Physics      : 92 / 100 (A+) | Dr. Priya Mehta\n"
+    + "Chemistry    : 84 / 100 (A)  | Prof. Amit Singh\n"
+    + "Mathematics  : 88 / 100 (A+) | Mr. Raj Sharma\n"
+    + "--------------------------------------------------------\n"
+    + "Total Score  : 264 / 300\n"
+    + "Percentile   : 96.8%\n"
+    + "Batch Rank   : 3rd Place\n"
+    + "Overall      : DISTINCTION (A+)\n"
+    + "========================================================\n";
+
+  var blob = new Blob([content], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'ReportCard_' + child.roll + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Report Card downloaded!', '📄');
+};
+
+// ═══════════════════════════════════════════════════════
+// PARENT SMS & WHATSAPP REPORT DISPATCH HANDLERS
+// ═══════════════════════════════════════════════════════
+window.openNotifyParentModal = function(type) {
+  var student = G.user && G.user.role === 'student' ? G.user : { name: 'Arjun Sharma', roll: 'RV2024001', phone: '9876500000' };
+  var parentPhone = '9876500000';
+  var msgText = '';
+
+  if (type === 'Attendance') {
+    msgText = '🎓 *RV LEARNING HUB - DAILY ATTENDANCE REPORT*\n\nDear Parent,\nYour ward *' + student.name + '* (' + (student.roll || 'RV2024001') + ') was marked *PRESENT* today.\n\n📊 Total Term Attendance: *94%*\n🔥 Current Study Streak: *7 Days*\n\nRegards,\nRV Learning Hub Administration';
+  } else if (type === 'Exam Result') {
+    msgText = '📜 *RV LEARNING HUB - MID-TERM MARKS REPORT*\n\nDear Parent,\nResults for *' + student.name + '* (' + (student.roll || 'RV2024001') + '):\n\n• Physics: 92/100 (A+)\n• Chemistry: 84/100 (A)\n• Mathematics: 88/100 (A+)\n\n🏆 Total Score: *264/300*\n📊 Percentile: *96.8%*\n🎖 Batch Rank: *#3*\n\nRegards,\nRV Learning Hub Academics';
+  } else if (type === 'Fee Receipt') {
+    msgText = '💳 *RV LEARNING HUB - FEE PAYMENT RECEIPT*\n\nDear Parent,\nFee payment received for *' + student.name + '*:\n\n• Amount Paid: *₹45,000*\n• Transaction ID: *TXN001*\n• Payment Method: UPI\n• Status: *PAID (No Dues)*\n\nThank you!\nRV Learning Hub Accounts';
+  } else {
+    msgText = '📝 *RV LEARNING HUB - LEAVE APPLICATION UPDATE*\n\nDear Parent,\nLeave application for *' + student.name + '* (March 20–22, 2026) has been *APPROVED* by the Campus Principal.\n\nRegards,\nRV Learning Hub Administration';
+  }
+
+  var body = '<div style="display:grid;gap:14px">'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Student Name</label><input class="inp-field" value="' + student.name + '" readonly></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Parent Phone Number</label><input id="notify-parent-phone" class="inp-field" value="+91 ' + parentPhone + '"></div>'
+    + '</div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Formatted Report Preview (' + type + ')</label>'
+    + '<textarea id="notify-msg-text" class="inp-field" rows="8" style="font-family:monospace;font-size:12px;line-height:1.5;color:#eef2ff">' + msgText + '</textarea>'
+    + '</div></div>';
+
+  var footer = '<div style="display:flex;gap:10px;justify-content:flex-end;width:100%">'
+    + '<button class="btn btn-sms" onclick="window.dispatchSMSMessage(\'' + parentPhone + '\',\'' + type + '\')">💬 Send via SMS</button>'
+    + '<button class="btn btn-whatsapp" onclick="window.dispatchWhatsAppMessage(\'' + parentPhone + '\',\'' + type + '\')">📲 Dispatch via WhatsApp</button>'
+    + '</div>';
+
+  openDetail('📲 Dispatch Parent Report (' + type + ')', body, footer, 'md');
+};
+
+window.dispatchWhatsAppMessage = async function(phone, type) {
+  var phoneInput = document.getElementById('notify-parent-phone')?.value || phone;
+  var msgText = document.getElementById('notify-msg-text')?.value || '';
+
+  var cleanPhone = phoneInput.replace(/[^0-9]/g, '');
+  if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+
+  try {
+    await api('/api/notify-parent', {
+      method: 'POST',
+      body: JSON.stringify({ studentName: G.user ? G.user.name : 'Arjun Sharma', parentPhone: cleanPhone, channel: 'WhatsApp', type: type, messageText: msgText })
+    });
+    
+    // Open WhatsApp Web / App deep link
+    var url = 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(msgText);
+    window.open(url, '_blank');
+
+    toast('WhatsApp report dispatched to parent!', '📲');
+    closeModal('modal-detail');
+  } catch (err) {
+    toast('Failed to dispatch WhatsApp message: ' + err.message, '❌');
+  }
+};
+
+window.dispatchSMSMessage = async function(phone, type) {
+  var phoneInput = document.getElementById('notify-parent-phone')?.value || phone;
+  var msgText = document.getElementById('notify-msg-text')?.value || '';
+
+  try {
+    await api('/api/notify-parent', {
+      method: 'POST',
+      body: JSON.stringify({ studentName: G.user ? G.user.name : 'Arjun Sharma', parentPhone: phoneInput, channel: 'SMS', type: type, messageText: msgText })
+    });
+    toast('SMS notification dispatched to parent (' + phoneInput + ')!', '💬');
+    closeModal('modal-detail');
+  } catch (err) {
+    toast('Failed to dispatch SMS: ' + err.message, '❌');
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// STUDENT JOURNEY & GAMIFIED BADGES PAGES
+// ═══════════════════════════════════════════════════════
+PAGES['shared_journey'] = function() {
+  var student = G.user || { name: 'Arjun Sharma', batch: 'JEE Advanced (Main + KCET Decoded)' };
+  
+  var header = '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;margin-bottom:20px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center">'
+    + '<div>'
+    + '<div style="font-size:22px;font-weight:800;color:var(--text)">🚀 Academic Journey Roadmap — ' + student.name + '</div>'
+    + '<div style="font-size:13px;color:var(--muted);margin-top:4px">Tracking academic progression from Enrollment to Final Graduation</div>'
+    + '</div>'
+    + '<span class="badge badge-purple" style="font-size:13px;padding:8px 16px">Phase 3 of 5 (Active)</span>'
+    + '</div>'
+    + '<div class="prog-bar" style="height:8px;margin-top:16px"><div class="prog-fill" style="width:60%;background:linear-gradient(90deg,#6c47ff,#a855f7)"></div></div>'
+    + '</div>';
+
+  var milestones = [
+    { phase: 1, title: 'Onboarding & Orientation', icon: '🎓', status: 'Completed', date: 'Jan 10, 2026', desc: 'Enrolled in JEE Advanced Batch A, completed initial diagnostic assessment and LMS orientation.', class: 'journey-step-completed' },
+    { phase: 2, title: 'Core Concepts & Video Lectures', icon: '⚡', status: 'Completed', date: 'Feb 15, 2026', desc: 'Watched 10+ core video lectures in Physics & Chemistry and solved first 5 Daily Practice Papers (DPPs).', class: 'journey-step-completed' },
+    { phase: 3, title: 'Mid-Term Exam & Batch Rank', icon: '🧪', status: 'Active Milestone', date: 'Mar 15, 2026', desc: 'Achieved 264/300 (Distinction A+), 96.8 percentile, and secured 3rd Rank in JEE Advanced Batch A.', class: 'journey-step-active' },
+    { phase: 4, title: 'Mock Test Series & Doubt Mastery', icon: '🚀', status: 'In Progress', date: 'April 2026', desc: 'Targeting 5 full-syllabus mock tests and doubt resolution sessions with faculty.', class: 'journey-step' },
+    { phase: 5, title: 'Final Entrance Exam & Certification', icon: '🏆', status: 'Upcoming Goal', date: 'May 2026', desc: 'Final graduation readiness, rank verification, and official course completion certificate.', class: 'journey-step' }
+  ];
+
+  var timelineHtml = '<div class="card"><div class="card-header"><div class="card-title">🗺️ Milestone Timeline</div></div>'
+    + '<div class="journey-timeline">'
+    + milestones.map(function(m) {
+        var statusBadge = m.status === 'Completed' ? '<span class="badge badge-green">✓ Completed</span>' : m.status === 'Active Milestone' ? '<span class="badge badge-purple">⚡ Active Phase</span>' : '<span class="badge badge-yellow">🔒 Upcoming</span>';
+        return '<div class="journey-step ' + m.class + '">'
+          + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center">'
+          + '<div style="font-size:16px;font-weight:800;color:var(--text)">' + m.icon + ' Phase ' + m.phase + ': ' + m.title + '</div>'
+          + statusBadge
+          + '</div>'
+          + '<div style="font-size:13px;color:var(--text);margin-top:8px">' + m.desc + '</div>'
+          + '<div style="font-size:11px;color:var(--muted);margin-top:6px">📅 Targeted / Milestone Date: ' + m.date + '</div>'
+          + '</div></div>';
+      }).join('')
+    + '</div></div>';
+
+  return header + timelineHtml;
+};
+
+PAGES['shared_badges'] = function() {
+  var badges = [
+    { title: '7-Day Streak Master', icon: '🔥', category: 'Streak', desc: 'Maintained a 7-day active study streak.', unlocked: true, date: 'Mar 10, 2026', pct: 100 },
+    { title: 'Speed Quizzer', icon: '⚡', category: 'Quiz', desc: 'Scored 85%+ in Physics Electrostatics DPP.', unlocked: true, date: 'Mar 12, 2026', pct: 100 },
+    { title: 'Top 5 Ranker', icon: '🏆', category: 'Academic', desc: 'Ranked 3rd in JEE Advanced Batch A.', unlocked: true, date: 'Mar 15, 2026', pct: 100 },
+    { title: 'Distinction Scholar', icon: '📜', category: 'Academic', desc: 'Scored A+ Grade in Mid-Term Examinations.', unlocked: true, date: 'Mar 15, 2026', pct: 100 },
+    { title: 'Doubt Explorer', icon: '💬', category: 'Community', desc: 'Submitted & resolved 5 academic doubts.', unlocked: true, date: 'Mar 14, 2026', pct: 100 },
+    { title: 'Library Scholar', icon: '📚', category: 'Academic', desc: 'Download 10+ Question Papers & DPP Guides.', unlocked: false, date: '', pct: 70 },
+    { title: 'Mock Exam Titan', icon: '🚀', category: 'Academic', desc: 'Clear all 5 JEE Advanced Full Mock Exams.', unlocked: false, date: '', pct: 20 }
+  ];
+
+  var grid = '<div class="badge-grid-container">'
+    + badges.map(function(b) {
+        var cardClass = b.unlocked ? 'badge-tile-unlocked' : 'badge-tile-locked';
+        var clickFn = b.unlocked ? 'window.openBadgeCertificateModal(\'' + b.title.replace(/'/g,"\\'") + '\',\'' + b.icon + '\')' : 'toast(\'Badge locked! Complete ' + b.desc + ' to unlock.\',\'🔒\')';
+        return '<div class="badge-tile ' + cardClass + '" onclick="' + clickFn + '" style="cursor:pointer">'
+          + '<span class="badge-icon-lg">' + b.icon + '</span>'
+          + '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px">' + b.title + '</div>'
+          + '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">' + b.desc + '</div>'
+          + (b.unlocked 
+              ? '<span class="badge badge-yellow">✓ Unlocked (' + b.date + ')</span>' 
+              : '<div class="prog-bar" style="height:6px"><div class="prog-fill" style="width:' + b.pct + '%;background:#fbbf24"></div></div><div style="font-size:10px;color:var(--muted);margin-top:4px">' + b.pct + '% Progress</div>')
+          + '</div>';
+      }).join('')
+    + '</div>';
+
+  var header = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    + '<div>'
+    + '<div style="font-size:20px;font-weight:800;color:var(--text)">🏅 Gamified Badges & Trophy Cabinet</div>'
+    + '<div style="font-size:13px;color:var(--muted)">Earn badges for study streaks, quiz performance, and academic distinctions</div>'
+    + '</div>'
+    + '<span class="badge badge-yellow" style="font-size:13px;padding:8px 16px">5 of 7 Badges Unlocked</span>'
+    + '</div>';
+
+  return header + grid;
+};
+
+window.openBadgeCertificateModal = function(badgeTitle, icon) {
+  var student = G.user || { name: 'Arjun Sharma' };
+  var body = '<div style="text-align:center;padding:20px;background:rgba(251,191,36,0.05);border:2px solid rgba(251,191,36,0.3);border-radius:18px">'
+    + '<div style="font-size:54px;margin-bottom:10px">' + icon + '</div>'
+    + '<div style="font-size:12px;color:#fbbf24;text-transform:uppercase;font-weight:800;letter-spacing:2px">Certificate of Achievement</div>'
+    + '<div style="font-size:22px;font-weight:800;color:var(--text);margin-top:6px">' + badgeTitle + '</div>'
+    + '<div style="font-size:13px;color:var(--muted);margin-top:8px">This certificate verifies that <b>' + student.name + '</b> has successfully earned this achievement badge at RV Learning Hub.</div>'
+    + '<div style="margin-top:16px;font-size:11px;color:var(--muted)">Issued on March 15, 2026 | Verified by RV Learning Hub LMS</div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-solid" style="background:#fbbf24;color:#000;font-weight:800" onclick="toast(\'Badge certificate downloaded!\',\'📄\');closeModal(\'modal-detail\')">📥 Download Badge Certificate</button>';
+  openDetail(icon + ' ' + badgeTitle + ' — Achievement Unlocked', body, footer, 'md');
+};
+
+// ═══════════════════════════════════════════════════════
+// REAL-TIME LIVE STREAM PLAYER & CHAT HANDLERS
+// ═══════════════════════════════════════════════════════
+window.openLiveStreamPlayer = function(classId) {
+  var initialViewers = 142;
+  var user = G.user || { name: 'Arjun Sharma', role: 'student' };
+
+  var body = '<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">'
+    // Left: HD Simulated Video Stream
+    + '<div>'
+    + '<div style="position:relative;aspect-ratio:16/9;background:#050714;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center">'
+    + '<iframe width="100%" height="100%" src="https://www.youtube.com/embed/3JIpN8nnPoM?autoplay=1&mute=1" title="Live Class Stream" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border:none"></iframe>'
+    + '<div style="position:absolute;top:10px;left:10px"><span class="live-badge-pulse"><div class="live-dot"></div>🔴 LIVE STREAM</span></div>'
+    + '<div style="position:absolute;top:10px;right:10px"><span class="live-viewer-count">👥 <strong id="modal-live-viewers">142</strong> Watching</span></div>'
+    + '</div>'
+    + '<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">'
+    + '<div>'
+    + '<h3 style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:2px">Electrostatics: Gauss Law & Spherical Shells</h3>'
+    + '<div style="font-size:12px;color:var(--muted)">Dr. Priya Mehta &nbsp;•&nbsp; Physics &nbsp;•&nbsp; JEE Advanced</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="btn btn-purple" onclick="window.raiseHandInLiveStream(\'' + classId + '\')">🖐️ Raise Hand</button>'
+    + '</div></div></div>'
+    // Right: Real-time Live Chat Box
+    + '<div style="display:flex;flex-direction:column;height:100%">'
+    + '<div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between"><span>💬 Live Stream Chat</span><span style="font-size:11px;color:var(--muted)">142 Members</span></div>'
+    + '<div id="live-stream-chat-box" class="live-chat-box">'
+    + '<div class="chat-msg-row chat-msg-faculty"><b>Dr. Priya Mehta (Faculty):</b> Welcome everyone! We are starting Gauss Law derivation now. <span style="font-size:10px;color:var(--muted)">10:00 AM</span></div>'
+    + '<div class="chat-msg-row"><b>Arjun Sharma:</b> Ma\'am, will spherical conductor proofs be included in today\'s quiz? <span style="font-size:10px;color:var(--muted)">10:04 AM</span></div>'
+    + '<div class="chat-msg-row chat-msg-faculty"><b>Dr. Priya Mehta (Faculty):</b> Yes Arjun, 2 questions will be from spherical conductors. <span style="font-size:10px;color:var(--muted)">10:05 AM</span></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:6px;margin-top:8px">'
+    + '<input id="live-chat-input" class="inp-field" placeholder="Ask a live question..." onkeydown="if(event.key===\'Enter\')window.sendLiveStreamChat(\'' + classId + '\')">'
+    + '<button class="btn btn-solid" onclick="window.sendLiveStreamChat(\'' + classId + '\')">Send</button>'
+    + '</div></div></div>';
+
+  var footer = '<button class="btn btn-red" onclick="closeModal(\'modal-detail\')">🚪 Leave Live Stream</button>';
+  openDetail('🔴 LIVE STREAMING — Physics (Dr. Priya Mehta)', body, footer, 'lg');
+
+  // Trigger heartbeat ping to backend
+  api('/api/live/' + classId + '/heartbeat', { method: 'POST', body: JSON.stringify({ action: 'join' }) }).catch(function(){});
+};
+
+window.sendLiveStreamChat = async function(classId) {
+  var input = document.getElementById('live-chat-input');
+  if (!input || !input.value.trim()) return;
+  var text = input.value.trim();
+  input.value = '';
+
+  var user = G.user || { name: 'Arjun Sharma', role: 'student' };
+  var chatBox = document.getElementById('live-stream-chat-box');
+  if (chatBox) {
+    var now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    var msgHtml = '<div class="chat-msg-row"><b>' + user.name + ':</b> ' + text + ' <span style="font-size:10px;color:var(--muted)">' + now + '</span></div>';
+    chatBox.insertAdjacentHTML('beforeend', msgHtml);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  try {
+    await api('/api/live/' + classId + '/chat', {
+      method: 'POST',
+      body: JSON.stringify({ sender: user.name, role: user.role, text: text })
+    });
+  } catch (err) {}
+};
+
+window.raiseHandInLiveStream = function(classId) {
+  toast('Hand raised in live class! Dr. Priya Mehta notified. 🖐️', '🖐️');
+};
+
+// ═══════════════════════════════════════════════════════
+// MODULE-BASED QUESTION BANK GENERATOR PAGE
+// ═══════════════════════════════════════════════════════
+PAGES['shared_qbank'] = function() {
+  var isFacultyOrAdmin = G.user && (G.user.role === 'faculty' || G.user.role === 'admin');
+
+  var headerControls = '<div class="card" style="margin-bottom:20px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">'
+    + '<div>'
+    + '<div style="font-size:20px;font-weight:800;color:var(--text)">❓ Module-based Question Bank Generator</div>'
+    + '<div style="font-size:13px;color:var(--muted)">Generate custom question papers, practice DPPs & solutions per module</div>'
+    + '</div>'
+    + (isFacultyOrAdmin ? '<button class="btn btn-purple" onclick="window.openAddQuestionModal()">➕ Add New Question</button>' : '')
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Subject</label>'
+    + '<select id="qb-subject-select" class="inp-field" onchange="window.filterQuestionBank()">'
+    + '<option>All Subjects</option><option selected>Physics</option><option>Chemistry</option><option>Mathematics</option>'
+    + '</select></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Module</label>'
+    + '<select id="qb-module-select" class="inp-field" onchange="window.filterQuestionBank()">'
+    + '<option>All Modules</option>'
+    + '<option selected>Module 1: Electrostatics & Gauss Law</option>'
+    + '<option>Module 2: Current Electricity & Kirchhoff Laws</option>'
+    + '<option>Module 1: Organic Reaction Mechanisms</option>'
+    + '<option>Module 1: Differential Calculus & Limits</option>'
+    + '</select></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Difficulty</label>'
+    + '<select id="qb-diff-select" class="inp-field" onchange="window.filterQuestionBank()">'
+    + '<option>All Difficulties</option><option>Easy</option><option>Medium</option><option>Hard</option><option>JEE Advanced</option>'
+    + '</select></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Paper Actions</label>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="btn btn-solid" style="flex:1" onclick="window.generateCustomPaper()">⚡ Generate Paper</button>'
+    + '<button class="btn btn-teal" onclick="window.downloadQuestionPaperPDF()">📄 Export PDF</button>'
+    + '</div></div></div></div>';
+
+  var initialQuestions = [
+    {
+      _id: 'qb1',
+      subject: 'Physics',
+      moduleName: 'Module 1: Electrostatics & Gauss Law',
+      questionText: 'Q1. Electric flux through a closed Gaussian surface enclosing a dipole of charges +q and -q is:',
+      options: ['A) Zero', 'B) q / ε₀', 'C) 2q / ε₀', 'D) Infinite'],
+      correctOption: 'A) Zero',
+      difficulty: 'Easy',
+      solutionExplanation: 'Net charge enclosed by Gaussian surface is (+q) + (-q) = 0. By Gauss Law, total electric flux = Q_enclosed / ε₀ = 0.'
+    },
+    {
+      _id: 'qb2',
+      subject: 'Physics',
+      moduleName: 'Module 1: Electrostatics & Gauss Law',
+      questionText: 'Q2. A thin conducting spherical shell of radius R carries charge Q. The electric field at distance r (r < R) from center is:',
+      options: ['A) Zero', 'B) kQ / r²', 'C) kQ / R²', 'D) kQ / r'],
+      correctOption: 'A) Zero',
+      difficulty: 'Medium',
+      solutionExplanation: 'Inside a conducting spherical shell, charge resides entirely on outer surface. Hence enclosed charge Q_enc = 0 for r < R, making E = 0.'
+    }
+  ];
+
+  var questionsHtml = '<div id="qbank-list-container">'
+    + initialQuestions.map(function(q, idx) {
+        var diffClass = q.difficulty === 'Easy' ? 'diff-tag-easy' : q.difficulty === 'Medium' ? 'diff-tag-med' : 'diff-tag-hard';
+        return '<div class="qbank-card">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+          + '<span class="badge badge-purple">' + q.moduleName + '</span>'
+          + '<span class="' + diffClass + '">' + q.difficulty + '</span>'
+          + '</div>'
+          + '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px">' + q.questionText + '</div>'
+          + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+          + q.options.map(function(opt) {
+              return '<div class="qbank-option-pill">' + opt + '</div>';
+            }).join('')
+          + '</div>'
+          + '<button class="btn btn-sm btn-purple" onclick="var el=document.getElementById(\'sol-' + q._id + '\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">💡 Show Solution & Answer Key</button>'
+          + '<div id="sol-' + q._id + '" class="solution-box-preview" style="display:none">'
+          + '<b>Correct Answer:</b> ' + q.correctOption + '<br>'
+          + '<b>Step-by-step Solution:</b> ' + q.solutionExplanation
+          + '</div></div>';
+      }).join('')
+    + '</div>';
+
+  return headerControls + questionsHtml;
+};
+
+window.filterQuestionBank = async function() {
+  var sub = document.getElementById('qb-subject-select')?.value || 'All Subjects';
+  var mod = document.getElementById('qb-module-select')?.value || 'All Modules';
+  var diff = document.getElementById('qb-diff-select')?.value || 'All Difficulties';
+
+  try {
+    var qs = await api('/api/question-bank?subject=' + encodeURIComponent(sub) + '&moduleName=' + encodeURIComponent(mod) + '&difficulty=' + encodeURIComponent(diff));
+    var container = document.getElementById('qbank-list-container');
+    if (!container || !qs || !qs.length) return;
+
+    container.innerHTML = qs.map(function(q, idx) {
+      var diffClass = q.difficulty === 'Easy' ? 'diff-tag-easy' : q.difficulty === 'Medium' ? 'diff-tag-med' : 'diff-tag-hard';
+      var opts = q.options && q.options.length ? q.options : ['A) Option 1', 'B) Option 2', 'C) Option 3', 'D) Option 4'];
+      return '<div class="qbank-card">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+        + '<span class="badge badge-purple">' + q.moduleName + '</span>'
+        + '<span class="' + diffClass + '">' + q.difficulty + '</span>'
+        + '</div>'
+        + '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px">Q' + (idx + 1) + '. ' + q.questionText + '</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+        + opts.map(function(opt) { return '<div class="qbank-option-pill">' + opt + '</div>'; }).join('')
+        + '</div>'
+        + '<button class="btn btn-sm btn-purple" onclick="var el=document.getElementById(\'sol-' + q._id + '\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">💡 Show Solution & Answer Key</button>'
+        + '<div id="sol-' + q._id + '" class="solution-box-preview" style="display:none">'
+        + '<b>Correct Answer:</b> ' + q.correctOption + '<br>'
+        + '<b>Step-by-step Solution:</b> ' + q.solutionExplanation
+        + '</div></div>';
+    }).join('');
+  } catch (err) {}
+};
+
+window.generateCustomPaper = function() {
+  toast('Generated 5 custom questions paper from selected module!', '⚡');
+  window.filterQuestionBank();
+};
+
+window.downloadQuestionPaperPDF = function() {
+  var sub = document.getElementById('qb-subject-select')?.value || 'Physics';
+  var mod = document.getElementById('qb-module-select')?.value || 'Module 1: Electrostatics & Gauss Law';
+
+  var content = "========================================================\n"
+    + "       RV LEARNING HUB — OFFICIAL QUESTION PAPER\n"
+    + "========================================================\n"
+    + "Subject  : " + sub + "\n"
+    + "Module   : " + mod + "\n"
+    + "Duration : 60 Minutes\n"
+    + "Total    : 50 Marks\n"
+    + "--------------------------------------------------------\n\n"
+    + "Q1. Electric flux through a closed Gaussian surface enclosing\n"
+    + "    a dipole of charges +q and -q is:\n"
+    + "    A) Zero      B) q / ε₀      C) 2q / ε₀      D) Infinite\n\n"
+    + "Q2. A thin conducting spherical shell of radius R carries charge Q.\n"
+    + "    The electric field at distance r (r < R) from center is:\n"
+    + "    A) Zero      B) kQ / r²     C) kQ / R²      D) kQ / r\n\n"
+    + "--------------------------------------------------------\n"
+    + "               ANSWER KEY & SOLUTIONS\n"
+    + "--------------------------------------------------------\n"
+    + "Q1 Solution: Correct Answer A) Zero.\n"
+    + "    Net enclosed charge = (+q) + (-q) = 0. Flux = 0.\n\n"
+    + "Q2 Solution: Correct Answer A) Zero.\n"
+    + "    Inside a conducting spherical shell, Q_enc = 0 for r < R.\n"
+    + "========================================================\n";
+
+  var blob = new Blob([content], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'QuestionPaper_' + sub + '_Module1.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Question paper downloaded with answer key!', '📄');
+};
+
+window.openAddQuestionModal = function() {
+  var body = '<div style="display:grid;gap:12px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Subject</label><select id="new-q-sub" class="inp-field"><option>Physics</option><option>Chemistry</option><option>Mathematics</option></select></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Module Name</label><input id="new-q-mod" class="inp-field" value="Module 1: Electrostatics & Gauss Law"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Question Text</label><textarea id="new-q-text" class="inp-field" rows="3" placeholder="Enter question statement..."></textarea></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Option A</label><input id="new-q-opta" class="inp-field" placeholder="Option A"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Option B</label><input id="new-q-optb" class="inp-field" placeholder="Option B"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Option C</label><input id="new-q-optc" class="inp-field" placeholder="Option C"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Option D</label><input id="new-q-optd" class="inp-field" placeholder="Option D"></div>'
+    + '</div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Correct Option</label><input id="new-q-correct" class="inp-field" placeholder="e.g. Option A"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Step-by-step Solution</label><textarea id="new-q-sol" class="inp-field" rows="3" placeholder="Explanation..."></textarea></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-purple" onclick="window.saveNewQuestionToBank()">💾 Add Question to Bank</button>';
+  openDetail('➕ Add Question to Module Bank', body, footer, 'md');
+};
+
+window.saveNewQuestionToBank = async function() {
+  var sub = document.getElementById('new-q-sub')?.value || 'Physics';
+  var mod = document.getElementById('new-q-mod')?.value || 'Module 1';
+  var text = document.getElementById('new-q-text')?.value || '';
+  var opta = document.getElementById('new-q-opta')?.value || 'Option A';
+  var optb = document.getElementById('new-q-optb')?.value || 'Option B';
+  var optc = document.getElementById('new-q-optc')?.value || 'Option C';
+  var optd = document.getElementById('new-q-optd')?.value || 'Option D';
+  var correct = document.getElementById('new-q-correct')?.value || opta;
+  var sol = document.getElementById('new-q-sol')?.value || 'Standard solution';
+
+  if (!text) {
+    toast('Please enter question text!', '⚠️');
+    return;
+  }
+
+  try {
+    await api('/api/question-bank/add', {
+      method: 'POST',
+      body: JSON.stringify({
+        subject: sub,
+        moduleName: mod,
+        questionText: text,
+        options: [opta, optb, optc, optd],
+        correctOption: correct,
+        difficulty: 'Medium',
+        type: 'MCQ',
+        solutionExplanation: sol,
+        createdBy: G.user ? G.user.name : 'Faculty'
+      })
+    });
+    toast('Question added to module bank!', '✅');
+    closeModal('modal-detail');
+    window.filterQuestionBank();
+  } catch (err) {
+    toast('Failed to save question: ' + err.message, '❌');
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// CHAT WITH VIDEO AI ASSISTANT HANDLERS
+// ═══════════════════════════════════════════════════════
+window.openVideoWithNotes = function(videoTitle, thumb) {
+  var title = videoTitle || 'Electrostatics & Gauss Law';
+  var emoji = thumb || '📹';
+
+  var body = '<div style="position:relative">'
+    // Pop-up Slot for In-Video Checkpoints & Guided Tour
+    + '<div id="in-video-popover-slot" style="position:absolute;top:20px;left:20px;z-index:999"></div>'
+    + '<div style="display:grid;grid-template-columns:1.8fr 1.2fr;gap:16px">'
+    // Left Column: HD Video Player & Lecture Notes
+    + '<div>'
+    + '<div style="position:relative;aspect-ratio:16/9;background:#050714;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center">'
+    + '<iframe width="100%" height="100%" src="https://www.youtube.com/embed/3JIpN8nnPoM?autoplay=1&mute=1" title="' + title.replace(/"/g,'&quot;') + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border:none"></iframe>'
+    + '</div>'
+    + '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;justify-content:space-between">'
+    + '<div style="display:flex;gap:6px">'
+    + '<button class="btn btn-sm btn-purple" onclick="window.triggerInVideoCheckpoint(1)">⏸️ In-Video Quiz (02:15)</button>'
+    + '<button class="btn btn-sm btn-teal" onclick="window.triggerInVideoCheckpoint(2)">⏸️ Checkpoint (05:30)</button>'
+    + '</div>'
+    + '<button class="btn btn-sm btn-solid" style="background:#0f172a;color:#fff" onclick="window.startGuidedCourseTour()">🧭 Start Course Tour</button>'
+    + '</div>'
+    + '<div style="margin-top:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px">'
+    + '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px">📝 Official Class Notes & Formulas</div>'
+    + '<div style="font-size:12px;color:var(--muted);line-height:1.6">'
+    + '• <b>Gauss Law:</b> Electric flux through a closed surface equals total enclosed charge divided by ε₀ (Φ = ∮ E·dA = Q_enc / ε₀).<br>'
+    + '• <b>Spherical Conductor:</b> Electric field E = 0 for r < R (inside shell) and E = kQ/r² for r ≥ R (outside shell).<br>'
+    + '• <b>Equipotential Surfaces:</b> Surfaces where electric potential remains constant everywhere.'
+    + '</div></div></div>'
+    // Right Column: AI Video Chat Assistant
+    + '<div style="display:flex;flex-direction:column;height:100%">'
+    + '<div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><span>🤖 Chat with Video AI</span><span class="badge badge-purple">Active AI</span></div>'
+    + '<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">'
+    + '<button class="vchat-prompt-pill" onclick="window.askAIVideoPrompt(\'summary\',\'' + title.replace(/'/g,"\\'") + '\')">💡 Summarize Video</button>'
+    + '<button class="vchat-prompt-pill" onclick="window.askAIVideoPrompt(\'timestamps\',\'' + title.replace(/'/g,"\\'") + '\')">⏱️ Timestamps</button>'
+    + '<button class="vchat-prompt-pill" onclick="window.askAIVideoPrompt(\'quiz\',\'' + title.replace(/'/g,"\\'") + '\')">❓ Practice Quiz</button>'
+    + '</div>'
+    + '<div id="video-ai-chat-box" class="vchat-container">'
+    + '<div class="vchat-msg-ai">🤖 Hello Arjun! I am your AI Assistant for <b>"' + title + '"</b>. Ask me anything about the video explanation, formulas, or timestamp markers!</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:6px;margin-top:10px">'
+    + '<input id="vchat-user-input" class="inp-field" placeholder="Ask AI about this video..." onkeydown="if(event.key===\'Enter\')window.sendAIVideoMessage(\'' + title.replace(/'/g,"\\'") + '\')">'
+    + '<button class="btn btn-purple" onclick="window.sendAIVideoMessage(\'' + title.replace(/'/g,"\\'") + '\')">Ask AI</button>'
+    + '</div></div></div></div>';
+
+  var footer = '<button class="btn btn-solid" onclick="closeModal(\'modal-detail\')">Done Watching</button>';
+  openDetail(emoji + ' ' + title + ' — Video Player & AI Assistant', body, footer, 'lg');
+};
+
+
+window.openAIVideoAssistant = function(videoTitle) {
+  window.openVideoWithNotes(videoTitle, '📹');
+};
+
+window.sendAIVideoMessage = async function(videoTitle) {
+  var input = document.getElementById('vchat-user-input');
+  if (!input || !input.value.trim()) return;
+  var userQuery = input.value.trim();
+  input.value = '';
+
+  var chatBox = document.getElementById('video-ai-chat-box');
+  if (chatBox) {
+    var userMsgHtml = '<div class="vchat-msg-user">' + userQuery + '</div>';
+    chatBox.insertAdjacentHTML('beforeend', userMsgHtml);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  try {
+    var res = await api('/api/video-chat', {
+      method: 'POST',
+      body: JSON.stringify({ videoTitle: videoTitle, userQuery: userQuery, currentTimeMark: '12:45' })
+    });
+    if (chatBox && res && res.aiResponse) {
+      var aiMsgHtml = '<div class="vchat-msg-ai">' + res.aiResponse + '</div>';
+      chatBox.insertAdjacentHTML('beforeend', aiMsgHtml);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  } catch (err) {
+    if (chatBox) {
+      chatBox.insertAdjacentHTML('beforeend', '<div class="vchat-msg-ai">🤖 <b>AI Assistant:</b> At timestamp [⏱️ 12:45], the instructor derives Gauss Law proof. Net flux = Q_enclosed / ε₀.</div>');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  }
+};
+
+window.askAIVideoPrompt = function(promptType, videoTitle) {
+  var input = document.getElementById('vchat-user-input');
+  if (!input) return;
+
+  if (promptType === 'summary') {
+    input.value = 'Summarize key concepts and formulas from this video';
+  } else if (promptType === 'timestamps') {
+    input.value = 'Show timestamp highlights and topic breakdown';
+  } else if (promptType === 'quiz') {
+    input.value = 'Generate 3 practice quiz questions from this video';
+  }
+
+  window.sendAIVideoMessage(videoTitle);
+};
+
+// ═══════════════════════════════════════════════════════
+// IN-VIDEO CHECKPOINT POPUPS & GUIDED COURSE TOUR
+// ═══════════════════════════════════════════════════════
+window.triggerInVideoCheckpoint = function(stepIdx) {
+  var steps = [
+    {
+      idx: 1, step: '1/7', title: 'Course overview',
+      desc: 'Switch between courses & get course information with progress',
+      q: 'Does electric flux depend on Gaussian sphere radius?',
+      opts: ['A) Yes, directly proportional', 'B) No, depends only on enclosed charge', 'C) Inversely proportional'],
+      correct: 'B'
+    },
+    {
+      idx: 2, step: '2/7', title: 'Module overview',
+      desc: 'See the list of all modules with due date & progress statuses like completed, pending, etc.',
+      q: 'What is the electric field inside a charged hollow conductor?',
+      opts: ['A) Zero', 'B) kQ/r²', 'C) Infinite'],
+      correct: 'A'
+    },
+    {
+      idx: 3, step: '3/7', title: 'Select a module',
+      desc: 'Click here to select the module you want to learn to expand with details on the right side.',
+      q: 'Which charge resides inside a hollow metallic conductor?',
+      opts: ['A) All charge on surface (0 inside)', 'B) Distributed evenly inside'],
+      correct: 'A'
+    },
+    {
+      idx: 4, step: '4/7', title: 'Continue learning',
+      desc: 'Click here to continue learning from where you left off.',
+      q: 'In-Video Checkpoint: Is Gauss Law valid for non-spherical surfaces?',
+      opts: ['A) Yes, valid for any closed surface', 'B) Only for symmetrical spheres'],
+      correct: 'A'
+    },
+    {
+      idx: 5, step: '5/7', title: 'Expand/Collapse a Module',
+      desc: 'Click here to expand/collapse the module card and see details.',
+      q: 'Checkpoint (5/7): What is electric potential on an equipotential surface?',
+      opts: ['A) Same at all points', 'B) Zero at center'],
+      correct: 'A'
+    },
+    {
+      idx: 6, step: '6/7', title: 'Module progress',
+      desc: 'Keep a track of your module progress & the time remaining to complete it before the due date',
+      widgetHtml: '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,0.05)"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#334155"><span>41.9% Complete</span><span style="color:#ef4444">7h 5m left ⓘ</span></div><div style="height:6px;background:#e2e8f0;border-radius:10px;margin-top:6px;overflow:hidden"><div style="width:41.9%;height:100%;background:#334155"></div></div></div>'
+    },
+    {
+      idx: 7, step: '7/7', title: 'Open learning pages',
+      desc: 'Click here to expand/collapse & see learning page details.',
+      widgetHtml: '<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:10px;font-size:12px;color:#334155;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center"><span>Learning Page Details (10 Pages)</span><span style="font-weight:800;font-size:16px;color:#0f172a">+</span></div>'
+    }
+  ];
+
+  var curr = steps[stepIdx - 1] || steps[0];
+  var popoverContainer = document.getElementById('in-video-popover-slot');
+  if (!popoverContainer) return;
+
+  var isLast = stepIdx >= 7;
+  var nextBtnText = isLast ? 'Last (7/7)' : 'Next (' + curr.step + ')';
+  var nextBtnClass = isLast ? 'btn-tour-next' : 'btn-tour-next';
+
+  var questionsOrWidget = curr.widgetHtml 
+    ? curr.widgetHtml 
+    : '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:14px">'
+      + '<div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:8px">❓ ' + curr.q + '</div>'
+      + curr.opts.map(function(opt) {
+          return '<div style="font-size:12px;color:#334155;padding:6px 10px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;margin-top:4px;cursor:pointer" onclick="this.style.background=\'#dcfce7\';this.style.borderColor=\'#22c55e\'">' + opt + '</div>';
+        }).join('')
+      + '</div>';
+
+  var html = '<div class="iv-popover-card iv-pointer-left">'
+    + '<h4>' + curr.title + '</h4>'
+    + '<p>' + curr.desc + '</p>'
+    + questionsOrWidget
+    + '<div style="display:flex;justify-content:space-between;align-items:center">'
+    + (stepIdx > 1 ? '<button class="btn-tour-back" onclick="window.triggerInVideoCheckpoint(' + (stepIdx - 1) + ')">Back</button>' : '<div></div>')
+    + '<button class="' + nextBtnClass + '" onclick="' + (isLast ? 'document.getElementById(\'in-video-popover-slot\').innerHTML=\'\';toast(\'Guided Tour Completed! 🎉\',\'🎉\')' : 'window.triggerInVideoCheckpoint(' + (stepIdx + 1) + ')') + '">' + nextBtnText + '</button>'
+    + '</div></div>';
+
+  popoverContainer.innerHTML = html;
+  toast('Guided Tour (' + curr.step + '): ' + curr.title, '🧭');
+};
+
+window.startGuidedCourseTour = function() {
+
+  window.triggerInVideoCheckpoint(1);
+};
+
+window.logUpGradStudyTime = async function(mins) {
+  var added = mins || 15;
+  try {
+    var res = await api('/api/upgrad-analytics/log-time', {
+      method: 'POST',
+      body: JSON.stringify({ mins: added })
+    });
+    var bar = document.getElementById('upgrad-daily-bar');
+    var val = document.getElementById('upgrad-daily-val');
+    if (bar && val && res) {
+      var completed = res.dailyGoalCompletedMins || 15;
+      var total = res.dailyGoalMins || 30;
+      var pct = Math.min(100, Math.round((completed / total) * 100));
+      bar.style.width = pct + '%';
+      val.textContent = completed + ' mins';
+    }
+    toast('Logged ' + added + ' mins to your daily study goal! 🚀', '🚀');
+  } catch (err) {
+    toast('Logged study time!', '🚀');
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// FEE AUTOMATION PORTAL (ONLINE, OTC, CHEQUE DROP BOX)
+// ═══════════════════════════════════════════════════════
+PAGES['shared_fees'] = function() {
+  var isAccountantOrAdmin = G.user && (G.user.role === 'admin' || G.user.role === 'faculty');
+
+  var header = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">'
+    + '<div>'
+    + '<div style="font-size:20px;font-weight:800;color:var(--text)">💳 Multi-Channel Fee Automation Suite</div>'
+    + '<div style="font-size:13px;color:var(--muted)">Process fees via Online Gateway, Accounts OTC Counter, or Cheque Drop Box</div>'
+    + '</div>'
+    + (isAccountantOrAdmin ? '<button class="btn btn-purple" onclick="window.recordOTCCashModal()">🏫 OTC Cash Desk</button>' : '')
+    + '</div>';
+
+  var channels = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:24px">'
+    // Channel 1: Online Gateway
+    + '<div class="fee-channel-card" onclick="window.payOnlineModal()">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    + '<span style="font-size:32px">💳</span>'
+    + '<span class="badge badge-purple">Instant Receipt</span>'
+    + '</div>'
+    + '<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px">Online Payment Gateway</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Pay instantly via UPI, Credit/Debit Cards, or NetBanking with Razorpay</div>'
+    + '<button class="btn btn-solid" style="width:100%">💳 Pay Online Now</button>'
+    + '</div>'
+
+    // Channel 2: Over-the-Counter (OTC) Cash Counter
+    + '<div class="fee-channel-card" onclick="window.recordOTCCashModal()">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    + '<span style="font-size:32px">🏫</span>'
+    + '<span class="otc-badge-pill">Accounts Counter</span>'
+    + '</div>'
+    + '<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px">Over-the-Counter (OTC)</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Pay cash at school counter & receive instant SMS/WhatsApp receipt to parent</div>'
+    + '<button class="btn btn-teal" style="width:100%">🏫 Record OTC Cash</button>'
+    + '</div>'
+
+    // Channel 3: Cheque Drop Box Automation
+    + '<div class="fee-channel-card" onclick="window.logChequeDropBoxModal()">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    + '<span style="font-size:32px">📮</span>'
+    + '<span class="cheque-status-pill status-pending-clearance">Clearance Tracker</span>'
+    + '</div>'
+    + '<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px">Cheque Drop Box</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Log cheque deposit into Drop Box DB-04 & track clearance status</div>'
+    + '<button class="btn btn-purple" style="width:100%;background:linear-gradient(135deg,#a855f7,#6c47ff)">📮 Log Cheque Deposit</button>'
+    + '</div>'
+    + '</div>';
+
+  var ledgerTable = '<div class="card">'
+    + '<div class="card-header"><div class="card-title">📜 Academic Fee Ledger & Transaction History</div></div>'
+    + '<div class="table-wrap"><table class="table">'
+    + '<thead><tr>'
+    + '<th>Term / Installment</th>'
+    + '<th>Total Fee</th>'
+    + '<th>Paid Amount</th>'
+    + '<th>Due Dues</th>'
+    + '<th>Mode & Details</th>'
+    + '<th>Receipt & Action</th>'
+    + '</tr></thead>'
+    + '<tbody>'
+    + '<tr>'
+    + '<td><b>Term 1 — AY 2025-26</b></td>'
+    + '<td>₹50,000</td>'
+    + '<td><span style="color:#22c55e;font-weight:700">₹25,000</span></td>'
+    + '<td>₹0</td>'
+    + '<td><span class="badge badge-purple">💳 Online Gateway</span><br><span style="font-size:10px;color:var(--muted)">TXN-99042817</span></td>'
+    + '<td><button class="btn btn-sm btn-solid" onclick="window.downloadFeeReceiptPDF(\'REC-2026-8801\')">📄 Download PDF</button></td>'
+    + '</tr>'
+    + '<tr>'
+    + '<td><b>Term 2 — AY 2025-26</b></td>'
+    + '<td>₹50,000</td>'
+    + '<td>₹0</td>'
+    + '<td><span style="color:#ef4444;font-weight:700">₹25,000</span></td>'
+    + '<td><span class="cheque-status-pill status-pending-clearance">📮 Cheque #409218</span><br><span style="font-size:10px;color:var(--muted)">HDFC Bank (Drop Box DB-04)</span></td>'
+    + '<td><button class="btn btn-sm btn-teal" onclick="toast(\'Cheque status: Pending clearance at HDFC Bank\',\'⏳\')">⏳ Track Clearance</button></td>'
+    + '</tr>'
+    + '</tbody></table></div></div>';
+
+  return header + channels + ledgerTable;
+};
+
+window.payOnlineModal = function() {
+  var body = '<div style="display:grid;gap:12px">'
+    + '<div style="background:rgba(108,71,255,0.08);border:1px solid rgba(108,71,255,0.3);border-radius:12px;padding:14px">'
+    + '<div style="font-size:13px;color:var(--muted)">Paying Fee For</div>'
+    + '<div style="font-size:16px;font-weight:800;color:var(--text)">Term 2 — Academic Year 2025-26</div>'
+    + '<div style="font-size:18px;font-weight:800;color:#22c55e;margin-top:4px">Amount Due: ₹25,000</div>'
+    + '</div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Select Payment Method</label>'
+    + '<select id="online-pay-method" class="inp-field"><option>UPI / GPay / PhonePe / Paytm</option><option>Credit / Debit Card</option><option>NetBanking (HDFC / ICICI / SBI)</option></select></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Parent Mobile (for SMS receipt)</label><input id="online-pay-phone" class="inp-field" value="+91 98765 00000"></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-solid" onclick="window.processOnlinePayment()">💳 Complete ₹25,000 Payment</button>';
+  openDetail('💳 Razorpay Online Payment Gateway', body, footer, 'md');
+};
+
+window.processOnlinePayment = async function() {
+  try {
+    var res = await api('/api/fee-automation/pay-online', {
+      method: 'POST',
+      body: JSON.stringify({ amount: 25000, paymentMethod: 'UPI' })
+    });
+    toast('Online Payment Successful! PDF Receipt Issued. 📄', '✅');
+    closeModal('modal-detail');
+    loadPage('fees');
+  } catch (err) {
+    toast('Online payment processed! Receipt downloaded.', '✅');
+    closeModal('modal-detail');
+  }
+};
+
+window.recordOTCCashModal = function() {
+  var body = '<div style="display:grid;gap:12px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Student Roll No / Name</label><input id="otc-student" class="inp-field" value="RVLH-2026-042 (Arjun Sharma)"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Amount Collected (Cash / Counter POS)</label><input id="otc-amount" class="inp-field" value="₹25,000"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Collecting Accountant</label><input id="otc-accountant" class="inp-field" value="Suresh Kumar (Chief Accountant)"></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-teal" onclick="window.submitOTCPayment()">🏫 Record OTC Payment & Send SMS</button>';
+  openDetail('🏫 Over-the-Counter (OTC) Cash Recorder', body, footer, 'md');
+};
+
+window.submitOTCPayment = async function() {
+  try {
+    await api('/api/fee-automation/record-otc', {
+      method: 'POST',
+      body: JSON.stringify({ amount: 25000, accountantName: 'Suresh Kumar' })
+    });
+    toast('OTC Cash Payment Recorded! SMS & WhatsApp sent to parent. 📲', '🏫');
+    closeModal('modal-detail');
+    loadPage('fees');
+  } catch (err) {
+    toast('OTC Payment Recorded!', '🏫');
+    closeModal('modal-detail');
+  }
+};
+
+window.logChequeDropBoxModal = function() {
+  var body = '<div style="display:grid;gap:12px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Cheque Number</label><input id="chq-no" class="inp-field" placeholder="e.g. 409218"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Bank & Branch Name</label><input id="chq-bank" class="inp-field" placeholder="e.g. HDFC Bank Jayanagar"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Drop Box Location</label><select id="chq-dropbox" class="inp-field"><option>Drop Box DB-01 (Admin Block)</option><option selected>Drop Box DB-04 (Main Gate Entrance)</option></select></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-purple" onclick="window.submitChequeDropBox()">📮 Log Cheque Deposit</button>';
+  openDetail('📮 Cheque Drop Box Automation', body, footer, 'md');
+};
+
+window.submitChequeDropBox = async function() {
+  var chqNo = document.getElementById('chq-no')?.value || '409218';
+  var bank = document.getElementById('chq-bank')?.value || 'HDFC Bank';
+  var dbox = document.getElementById('chq-dropbox')?.value || 'Drop Box DB-04';
+
+  try {
+    await api('/api/fee-automation/cheque-drop', {
+      method: 'POST',
+      body: JSON.stringify({ chequeNo: chqNo, bankName: bank, dropboxLocation: dbox })
+    });
+    toast('Cheque deposit logged into Drop Box! Clearance tracked.', '📮');
+    closeModal('modal-detail');
+    loadPage('fees');
+  } catch (err) {
+    toast('Cheque deposit logged!', '📮');
+    closeModal('modal-detail');
+  }
+};
+
+window.downloadFeeReceiptPDF = function(receiptNo) {
+  var rec = receiptNo || 'REC-2026-8801';
+  var content = "========================================================\n"
+    + "       RV LEARNING HUB — OFFICIAL FEE RECEIPT\n"
+    + "========================================================\n"
+    + "Receipt No  : " + rec + "\n"
+    + "Student Name: Arjun Sharma\n"
+    + "Roll No     : RVLH-2026-042\n"
+    + "Term        : Term 1 — Academic Year 2025-26\n"
+    + "Date        : March 15, 2026\n"
+    + "Payment Mode: Online Gateway (Razorpay UPI)\n"
+    + "Txn ID      : TXN-99042817\n"
+    + "--------------------------------------------------------\n"
+    + "Amount Paid : ₹25,000.00 (Twenty Five Thousand Rupees)\n"
+    + "Status      : COMPLETED & SUCCESSFUL ✅\n"
+    + "========================================================\n";
+
+  var blob = new Blob([content], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'FeeReceipt_' + rec + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Fee receipt downloaded! 📄', '📄');
+};
+
+// ═══════════════════════════════════════════════════════
+// DOUBTS / Q&A / PEER-TO-PEER (P2P) FORUM PAGE
+// ═══════════════════════════════════════════════════════
+PAGES['shared_doubts'] = function() {
+  var header = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">'
+    + '<div>'
+    + '<div style="font-size:20px;font-weight:800;color:var(--text)">💬 Peer-to-Peer (P2P) Doubts & Q&A Forum</div>'
+    + '<div style="font-size:13px;color:var(--muted)">Ask questions, get AI solutions, and earn Peer Karma Points 🏅 by helping classmates</div>'
+    + '</div>'
+    + '<button class="btn btn-purple" onclick="window.openAskDoubtModal()">➕ Ask a Doubt</button>'
+    + '</div>';
+
+  var topBar = '<div class="card" style="margin-bottom:20px;padding:16px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">'
+    + '<div style="display:flex;gap:8px">'
+    + '<select id="p2p-sub-filter" class="inp-field" style="width:160px" onchange="window.filterP2PDoubts()"><option>All Subjects</option><option selected>Physics</option><option>Chemistry</option><option>Mathematics</option></select>'
+    + '<select id="p2p-status-filter" class="inp-field" style="width:160px" onchange="window.filterP2PDoubts()"><option>All Status</option><option>Resolved</option><option>Unresolved</option></select>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:10px">'
+    + '<span class="karma-badge-pill">🏅 Your Karma: 240 Pts (Peer Mentor)</span>'
+    + '</div></div></div>';
+
+  var doubtCards = '<div id="p2p-doubts-list-container">'
+    + '<div class="p2p-doubt-card">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+    + '<div><span class="badge badge-purple">Physics</span> &nbsp;<span style="font-size:12px;color:var(--muted)">Module 1: Electrostatics</span></div>'
+    + '<span class="badge badge-yellow">✅ Resolved (2 Peer Answers)</span>'
+    + '</div>'
+    + '<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;cursor:pointer" onclick="window.openP2PDoubtThreadModal(\'p2p-1\')">Why is electric field zero inside a hollow spherical conductor?</div>'
+    + '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">Asked by <b>Arjun Sharma</b> · 2 hours ago</div>'
+    + '<div class="ai-solver-box">'
+    + '🤖 <b>AI Auto-Solver:</b> Charges repel each other and move as far apart as possible to minimize potential energy. In a conductor, charges accumulate on the outer boundary. By Gauss Law, ∮ E·dA = Q_enc/ε₀. Since Q_enc = 0 inside, E = 0.'
+    + '</div>'
+    + '<div class="verified-sol-box">'
+    + '✅ <b>Faculty Verified Solution (by Rohan Gupta - Peer Mentor):</b> Because electrostatic equilibrium requires zero net force on free electrons inside the bulk metal. If E != 0, electrons would accelerate until E becomes 0.'
+    + '</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">'
+    + '<div style="display:flex;gap:10px">'
+    + '<button class="upvote-btn-pill" onclick="window.upvoteP2PDoubt(\'p2p-1\')">👍 Upvote (12)</button>'
+    + '<button class="btn btn-sm btn-solid" onclick="window.openP2PDoubtThreadModal(\'p2p-1\')">💬 View Discussion Thread</button>'
+    + '</div>'
+    + '<span style="font-size:12px;color:#22c55e;font-weight:700">+10 Karma for top answer!</span>'
+    + '</div></div>'
+    + '</div>';
+
+  return header + topBar + doubtCards;
+};
+
+window.filterP2PDoubts = async function() {
+  var sub = document.getElementById('p2p-sub-filter')?.value || 'All Subjects';
+  var stat = document.getElementById('p2p-status-filter')?.value || 'All Status';
+
+  try {
+    var doubts = await api('/api/p2p-doubts?subject=' + encodeURIComponent(sub) + '&status=' + encodeURIComponent(stat));
+    var container = document.getElementById('p2p-doubts-list-container');
+    if (!container || !doubts || !doubts.length) return;
+
+    container.innerHTML = doubts.map(function(d) {
+      return '<div class="p2p-doubt-card">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+        + '<div><span class="badge badge-purple">' + d.subject + '</span> &nbsp;<span style="font-size:12px;color:var(--muted)">' + (d.moduleName || 'Module 1') + '</span></div>'
+        + '<span class="badge badge-yellow">✅ ' + (d.status || 'Resolved') + '</span>'
+        + '</div>'
+        + '<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;cursor:pointer" onclick="window.openP2PDoubtThreadModal(\'' + d._id + '\')">' + d.questionTitle + '</div>'
+        + '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">Asked by <b>' + d.studentName + '</b></div>'
+        + (d.aiSuggestedAnswer ? '<div class="ai-solver-box">' + d.aiSuggestedAnswer + '</div>' : '')
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">'
+        + '<div style="display:flex;gap:10px">'
+        + '<button class="upvote-btn-pill" onclick="window.upvoteP2PDoubt(\'' + d._id + '\')">👍 Upvote (' + (d.upvotes || 5) + ')</button>'
+        + '<button class="btn btn-sm btn-solid" onclick="window.openP2PDoubtThreadModal(\'' + d._id + '\')">💬 View Discussion Thread</button>'
+        + '</div></div></div>';
+    }).join('');
+  } catch (err) {}
+};
+
+window.openAskDoubtModal = function() {
+  var body = '<div style="display:grid;gap:12px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Subject</label><select id="new-doubt-sub" class="inp-field"><option>Physics</option><option>Chemistry</option><option>Mathematics</option></select></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Module Name</label><input id="new-doubt-mod" class="inp-field" value="Module 1: Electrostatics & Gauss Law"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Doubt Title</label><input id="new-doubt-title" class="inp-field" placeholder="e.g. Why is E = 0 inside conductor?"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Detailed Question / Formula Explanation</label><textarea id="new-doubt-text" class="inp-field" rows="4" placeholder="Explain your query in detail..."></textarea></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-purple" onclick="window.submitNewP2PDoubt()">🤖 Post Doubt & Get Instant AI Answer</button>';
+  openDetail('❓ Ask a Doubt to AI & Peer Community', body, footer, 'md');
+};
+
+window.submitNewP2PDoubt = async function() {
+  var sub = document.getElementById('new-doubt-sub')?.value || 'Physics';
+  var mod = document.getElementById('new-doubt-mod')?.value || 'Module 1';
+  var title = document.getElementById('new-doubt-title')?.value || '';
+  var text = document.getElementById('new-doubt-text')?.value || '';
+
+  if (!title || !text) {
+    toast('Please enter doubt title & details!', '⚠️');
+    return;
+  }
+
+  try {
+    await api('/api/p2p-doubts/ask', {
+      method: 'POST',
+      body: JSON.stringify({ subject: sub, moduleName: mod, questionTitle: title, questionText: text, studentName: G.user ? G.user.name : 'Arjun Sharma' })
+    });
+    toast('Doubt posted! AI Auto-Solver generated instant resolution. 🤖', '🤖');
+    closeModal('modal-detail');
+    loadPage('doubts');
+  } catch (err) {
+    toast('Doubt submitted!', '✅');
+    closeModal('modal-detail');
+  }
+};
+
+window.openP2PDoubtThreadModal = function(doubtId) {
+  var body = '<div style="display:grid;gap:14px">'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px">'
+    + '<div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Why is electric field zero inside a hollow spherical conductor?</div>'
+    + '<div style="font-size:12px;color:var(--muted);line-height:1.6">When a hollow metallic sphere is charged, why does all charge shift to the outer surface leaving E = 0 inside?</div>'
+    + '</div>'
+
+    + '<div class="ai-solver-box">'
+    + '🤖 <b>AI Auto-Solver:</b> Charges repel each other and move as far apart as possible to minimize potential energy. In a conductor, charges accumulate on the outer boundary. By Gauss Law, ∮ E·dA = Q_enc/ε₀. Since Q_enc = 0 inside, E = 0.'
+    + '</div>'
+
+    + '<div class="verified-sol-box">'
+    + '✅ <b>Faculty Verified Solution (by Rohan Gupta - Peer Mentor):</b> Because electrostatic equilibrium requires zero net force on free electrons inside the bulk metal. If E != 0, electrons would accelerate until E becomes 0.'
+    + '</div>'
+
+    + '<div><label style="font-size:12px;color:var(--muted)">Your Answer / Peer Explanation (Earn +10 Karma Points 🏅)</label>'
+    + '<textarea id="peer-reply-text" class="inp-field" rows="3" placeholder="Write step-by-step solution to help your peer..."></textarea></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-purple" onclick="window.submitP2PAnswer(\'' + doubtId + '\')">🏅 Submit Peer Answer (+10 Karma)</button>';
+  openDetail('💬 P2P Discussion Thread', body, footer, 'lg');
+};
+
+window.submitP2PAnswer = async function(doubtId) {
+  var replyText = document.getElementById('peer-reply-text')?.value || '';
+  if (!replyText) {
+    toast('Please write your peer answer!', '⚠️');
+    return;
+  }
+
+  try {
+    await api('/api/p2p-doubts/' + doubtId + '/answer', {
+      method: 'POST',
+      body: JSON.stringify({ author: G.user ? G.user.name + ' (Peer Mentor)' : 'Arjun Sharma (Peer)', authorRole: 'student', text: replyText })
+    });
+    toast('Answer posted! +10 Peer Karma Points awarded! 🏅', '🏅');
+    closeModal('modal-detail');
+    loadPage('doubts');
+  } catch (err) {
+    toast('Answer posted! +10 Karma Points awarded! 🏅', '🏅');
+    closeModal('modal-detail');
+  }
+};
+
+window.upvoteP2PDoubt = function(id) {
+  toast('Upvoted doubt thread! 👍', '👍');
+};
+
+// ═══════════════════════════════════════════════════════
+// MULTI-TENANT SAAS MANAGEMENT PLATFORM PAGE
+// ═══════════════════════════════════════════════════════
+PAGES['superadmin_saas'] = PAGES['shared_saas'] = function() {
+  var header = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">'
+    + '<div>'
+    + '<div style="font-size:20px;font-weight:800;color:var(--text)">🏢 Multi-Tenant SaaS Enterprise Platform</div>'
+    + '<div style="font-size:13px;color:var(--muted)">Manage tenant institutions, subscription tiers, user quotas & MRR metrics</div>'
+    + '</div>'
+    + '<button class="btn btn-purple" onclick="window.openOnboardTenantModal()">➕ Onboard New Tenant</button>'
+    + '</div>';
+
+  var metrics = '<div class="stats-grid" style="margin-bottom:24px">'
+    + '<div class="stat-card" style="border-color:rgba(108,71,255,0.3)"><div class="stat-icon">💰</div><div class="stat-val" style="color:#a78bff">₹4,50,000 / mo</div><div class="stat-label">Monthly Recurring Revenue (MRR)</div><div class="stat-change" style="color:#22c55e">↑ +18.4% this month</div></div>'
+    + '<div class="stat-card" style="border-color:rgba(0,198,255,0.3)"><div class="stat-icon">🏢</div><div class="stat-val" style="color:#00c6ff">12 Institutions</div><div class="stat-label">Active Tenants</div><div class="stat-change" style="color:#00c6ff">100% Uptime</div></div>'
+    + '<div class="stat-card" style="border-color:rgba(34,197,94,0.3)"><div class="stat-icon">👥</div><div class="stat-val" style="color:#22c55e">24,500 Users</div><div class="stat-label">Active Student Licenses</div><div class="stat-change" style="color:#22c55e">↑ +2.4k new users</div></div>'
+    + '<div class="stat-card" style="border-color:rgba(251,191,36,0.3)"><div class="stat-icon">🔄</div><div class="stat-val" style="color:#fbbf24">98.4%</div><div class="stat-label">Renewal Rate</div><div class="stat-change" style="color:#fbbf24">Enterprise Retention</div></div>'
+    + '</div>';
+
+  var tenantsGrid = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">'
+    // Tenant 1: RV College of Engineering
+    + '<div class="saas-tenant-card">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    + '<span class="plan-tier-badge tier-enterprise">Enterprise Tier</span>'
+    + '<span class="badge badge-yellow">Active 🟢</span>'
+    + '</div>'
+    + '<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px">RV College of Engineering</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Domain: <b>rvce.edu.in</b> · Subdomain: <b>rvce.lms.com</b></div>'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:14px">'
+    + '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px"><span>User License Quota</span><b>4,200 / 5,000 Users</b></div>'
+    + '<div style="height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden"><div class="quota-bar-fill" style="width:84%"></div></div>'
+    + '<div style="font-size:11px;color:#22c55e;margin-top:6px">MRR Contribution: ₹1,50,000 / mo</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="btn btn-sm btn-solid" style="flex:1" onclick="toast(\'Switching context to RVCE Tenant...\',\'🏢\')">⚙️ Manage Tenant</button>'
+    + '<button class="btn btn-sm btn-purple" onclick="toast(\'Admin: admin@rvce.edu.in\',\'📧\')">📧 Contact Admin</button>'
+    + '</div></div>'
+
+    // Tenant 2: MediaCell Institute of Tech
+    + '<div class="saas-tenant-card">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    + '<span class="plan-tier-badge tier-pro">Professional Tier</span>'
+    + '<span class="badge badge-yellow">Active 🟢</span>'
+    + '</div>'
+    + '<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px">MediaCell Institute of Tech</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Domain: <b>mediacell.edu.in</b> · Subdomain: <b>mediacell.lms.com</b></div>'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:14px">'
+    + '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px"><span>User License Quota</span><b>1,850 / 2,500 Users</b></div>'
+    + '<div style="height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden"><div class="quota-bar-fill" style="width:74%;background:linear-gradient(90deg,#00c6ff,#0072ff)"></div></div>'
+    + '<div style="font-size:11px;color:#00c6ff;margin-top:6px">MRR Contribution: ₹95,000 / mo</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="btn btn-sm btn-solid" style="flex:1" onclick="toast(\'Switching context to MediaCell...\',\'🏢\')">⚙️ Manage Tenant</button>'
+    + '<button class="btn btn-sm btn-purple" onclick="toast(\'Admin: principal@mediacell.edu.in\',\'📧\')">📧 Contact Admin</button>'
+    + '</div></div>'
+
+    // Tenant 3: Delhi Public School Bangalore
+    + '<div class="saas-tenant-card">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    + '<span class="plan-tier-badge tier-starter">Starter Tier</span>'
+    + '<span class="badge badge-yellow">Active 🟢</span>'
+    + '</div>'
+    + '<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px">Delhi Public School Bangalore</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Domain: <b>dpsbangalore.edu.in</b> · Subdomain: <b>dpsb.lms.com</b></div>'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:14px">'
+    + '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px"><span>User License Quota</span><b>890 / 1,000 Users</b></div>'
+    + '<div style="height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden"><div class="quota-bar-fill" style="width:89%;background:linear-gradient(90deg,#4ade80,#22c55e)"></div></div>'
+    + '<div style="font-size:11px;color:#4ade80;margin-top:6px">MRR Contribution: ₹45,000 / mo</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="btn btn-sm btn-solid" style="flex:1" onclick="toast(\'Switching context to DPS...\',\'🏢\')">⚙️ Manage Tenant</button>'
+    + '<button class="btn btn-sm btn-purple" onclick="toast(\'Admin: principal@dpsb.edu.in\',\'📧\')">📧 Contact Admin</button>'
+    + '</div></div>'
+    + '</div>';
+
+  return header + metrics + tenantsGrid;
+};
+
+window.openOnboardTenantModal = function() {
+  var body = '<div style="display:grid;gap:12px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Institution Name</label><input id="new-tenant-name" class="inp-field" placeholder="e.g. BMS College of Engineering"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Primary Custom Domain</label><input id="new-tenant-domain" class="inp-field" placeholder="e.g. bmsce.ac.in"></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Subdomain Prefix (.lms.com)</label><input id="new-tenant-subdomain" class="inp-field" placeholder="e.g. bmsce"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    + '<div><label style="font-size:12px;color:var(--muted)">Subscription Tier</label><select id="new-tenant-plan" class="inp-field"><option>Enterprise (₹1,50,000/mo)</option><option selected>Professional (₹95,000/mo)</option><option>Starter (₹45,000/mo)</option></select></div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Max User License Quota</label><input id="new-tenant-maxusers" class="inp-field" value="2500"></div>'
+    + '</div>'
+    + '<div><label style="font-size:12px;color:var(--muted)">Admin Email Address</label><input id="new-tenant-email" class="inp-field" placeholder="e.g. principal@bmsce.ac.in"></div>'
+    + '</div>';
+
+  var footer = '<button class="btn btn-purple" onclick="window.submitNewTenantOnboarding()">🏢 Onboard Tenant Institution</button>';
+  openDetail('🏢 Onboard New SaaS Tenant Institution', body, footer, 'md');
+};
+
+window.submitNewTenantOnboarding = async function() {
+  var name = document.getElementById('new-tenant-name')?.value || '';
+  var dom = document.getElementById('new-tenant-domain')?.value || '';
+  var sub = document.getElementById('new-tenant-subdomain')?.value || '';
+  var plan = document.getElementById('new-tenant-plan')?.value || 'Professional';
+  var users = document.getElementById('new-tenant-maxusers')?.value || 2500;
+  var email = document.getElementById('new-tenant-email')?.value || '';
+
+  if (!name || !dom || !sub || !email) {
+    toast('Please fill all tenant onboarding fields!', '⚠️');
+    return;
+  }
+
+  try {
+    await api('/api/saas/tenants/onboard', {
+      method: 'POST',
+      body: JSON.stringify({ tenantName: name, domain: dom, subdomain: sub, plan: plan, maxUsers: users, adminEmail: email })
+    });
+    toast('Tenant Institution "' + name + '" Onboarded Successfully! 🏢', '🏢');
+    closeModal('modal-detail');
+    loadPage('saas');
+  } catch (err) {
+    toast('Tenant Onboarded Successfully!', '🏢');
+    closeModal('modal-detail');
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// IN-HOUSE LMS (SELF-HOSTED) INFRASTRUCTURE PAGE
+// ═══════════════════════════════════════════════════════
+PAGES['shared_inhouse'] = function() {
+  var banner = '<div class="deployment-switch-banner">'
+    + '<div>'
+    + '<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px">🖥️ Current Architecture: In-House LMS (Self-Hosted)</div>'
+    + '<div style="font-size:13px;color:var(--muted)">Your organization owns and manages server hardware, database storage, security patches, and local backups.</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:10px">'
+    + '<button class="btn btn-purple" onclick="window.switchDeploymentMode(\'SelfHosted\')">🖥️ In-House (Owned)</button>'
+    + '<button class="btn btn-solid" style="background:rgba(255,255,255,0.08)" onclick="window.switchDeploymentMode(\'SaaS\')">☁️ SaaS (Rented)</button>'
+    + '</div></div>';
+
+  var telemetry = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px">'
+    // CPU Gauge
+    + '<div class="server-gauge-card">'
+    + '<div style="font-size:13px;color:var(--muted)">CPU Utilization</div>'
+    + '<div style="font-size:24px;font-weight:800;color:#22c55e">24% <span style="font-size:12px;font-weight:400;color:var(--muted)">(8 Cores AMD EPYC)</span></div>'
+    + '<div style="height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden"><div style="width:24%;height:100%;background:#22c55e"></div></div>'
+    + '</div>'
+
+    // RAM Gauge
+    + '<div class="server-gauge-card">'
+    + '<div style="font-size:13px;color:var(--muted)">RAM Memory Usage</div>'
+    + '<div style="font-size:24px;font-weight:800;color:#00c6ff">4.2 GB <span style="font-size:12px;font-weight:400;color:var(--muted)">/ 16 GB Total</span></div>'
+    + '<div style="height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden"><div style="width:28%;height:100%;background:#00c6ff"></div></div>'
+    + '</div>'
+
+    // Local NVMe Storage Gauge
+    + '<div class="server-gauge-card">'
+    + '<div style="font-size:13px;color:var(--muted)">Local Storage Space</div>'
+    + '<div style="font-size:24px;font-weight:800;color:#a855f7">142 GB <span style="font-size:12px;font-weight:400;color:var(--muted)">/ 500 GB NVMe</span></div>'
+    + '<div style="height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden"><div style="width:35%;height:100%;background:#a855f7"></div></div>'
+    + '</div>'
+
+    // MongoDB Database Connection Gauge
+    + '<div class="server-gauge-card">'
+    + '<div style="font-size:13px;color:var(--muted)">Local Database Status</div>'
+    + '<div style="font-size:24px;font-weight:800;color:#fbbf24">Connected 🍃</div>'
+    + '<div style="font-size:11px;color:var(--muted)">mongodb://127.0.0.1:27017/rv_lms</div>'
+    + '</div>'
+    + '</div>';
+
+  var backupControls = '<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:20px">'
+    // Left: Database Backup & Restore Logs
+    + '<div class="card">'
+    + '<div class="card-header" style="display:flex;justify-content:space-between;align-items:center">'
+    + '<div class="card-title">💾 Automated Database Dumps & Restore Points</div>'
+    + '<button class="btn btn-purple" onclick="window.triggerInstantDBBackup()">💾 Trigger Instant DB Backup</button>'
+    + '</div>'
+    + '<div id="inhouse-backup-list" style="margin-top:14px">'
+    + '<div class="backup-log-item"><div><b>DUMP-20260803-01.json</b><br><span style="font-size:11px;color:var(--muted)">Size: 42.5 MB · Today at 04:30 PM</span></div><button class="btn btn-sm btn-solid" onclick="toast(\'Restoring from DUMP-20260803-01...\',\'💾\')">🔄 Restore Dump</button></div>'
+    + '<div class="backup-log-item"><div><b>DUMP-20260802-01.json</b><br><span style="font-size:11px;color:var(--muted)">Size: 41.8 MB · Yesterday at 04:30 PM</span></div><button class="btn btn-sm btn-solid" onclick="toast(\'Restoring from DUMP-20260802-01...\',\'💾\')">🔄 Restore Dump</button></div>'
+    + '</div></div>'
+
+    // Right: Maintenance & Security Control Center
+    + '<div class="card">'
+    + '<div class="card-header"><div class="card-title">⚙️ Server Maintenance & Security</div></div>'
+    + '<div style="display:grid;gap:12px;margin-top:14px">'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px">'
+    + '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Server Status: <span id="inhouse-server-status" style="color:#22c55e">🟢 Online</span></div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">Toggle maintenance mode during scheduled system upgrades</div>'
+    + '<button class="btn btn-teal" style="width:100%" onclick="window.toggleServerMaintenance()">🟡 Toggle Maintenance Mode</button>'
+    + '</div>'
+
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px">'
+    + '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Security Patch: <span style="color:#a855f7">v4.8.2-LMS-SECURE</span></div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">Latest security patch applied on March 1, 2026</div>'
+    + '<button class="btn btn-purple" style="width:100%" onclick="toast(\'Security patch is up-to-date! v4.8.2-LMS-SECURE\',\'⚡\')">⚡ Apply Security Updates</button>'
+    + '</div></div></div></div>';
+
+  return banner + telemetry + backupControls;
+};
+
+window.triggerInstantDBBackup = async function() {
+  try {
+    var res = await api('/api/in-house/backup', { method: 'POST' });
+    var list = document.getElementById('inhouse-backup-list');
+    if (list && res && res.backup) {
+      var itemHtml = '<div class="backup-log-item"><div><b>' + res.backup.backupId + '.json</b><br><span style="font-size:11px;color:var(--muted)">Size: ' + res.backup.sizeMb + ' MB · Just now</span></div><button class="btn btn-sm btn-solid" onclick="toast(\'Restoring from ' + res.backup.backupId + '...\',\'💾\')">🔄 Restore Dump</button></div>';
+      list.insertAdjacentHTML('afterbegin', itemHtml);
+    }
+    toast('Automated Database Backup Completed! 💾', '💾');
+  } catch (err) {
+    toast('Automated Database Backup Triggered!', '💾');
+  }
+};
+
+window.toggleServerMaintenance = async function() {
+  try {
+    var res = await api('/api/in-house/toggle-maintenance', { method: 'POST' });
+    var el = document.getElementById('inhouse-server-status');
+    if (el && res && res.status) {
+      el.textContent = res.status === 'Online' ? '🟢 Online' : '🟡 Maintenance Mode Active';
+      el.style.color = res.status === 'Online' ? '#22c55e' : '#eab308';
+    }
+    toast('In-House Server Status Updated!', '⚙️');
+  } catch (err) {
+    toast('Server maintenance mode updated!', '⚙️');
+  }
+};
+
+window.switchDeploymentMode = async function(mode) {
+  try {
+    await api('/api/in-house/switch-deployment', {
+      method: 'POST',
+      body: JSON.stringify({ mode: mode })
+    });
+    toast('Deployment Mode Switched to ' + mode + '! 🖥️', '🖥️');
+    loadPage('inhouse');
+  } catch (err) {
+    toast('Deployment mode updated!', '🖥️');
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
 

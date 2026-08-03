@@ -1,21 +1,40 @@
 {
   "name": "RV Learning Hub LMS",
   "short_name": "RVLH LMS",
-  "description": "RV Learning Hub - Comprehensive Learning Management System for Web, Android & iOS",
+  "description": "RV Learning Hub - Comprehensive Learning Management System for JEE, NEET & Commerce preparation. Courses, Live Classes, AI Question Bank, Fee Management & Performance Analytics.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
+  "categories": ["education", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "com.rvlh.lms"
+    },
+    {
+      "platform": "itunes",
+      "id": "com.rvlh.lms"
+    }
+  ],
+  "prefer_related_applications": false
 }

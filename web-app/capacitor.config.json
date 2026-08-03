@@ -4,7 +4,10 @@
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "iosScheme": "capacitor",
+    "hostname": "app.rvlearninghub.com",
+    "allowNavigation": ["*.rvlearninghub.com"]
   },
   "plugins": {
     "SplashScreen": {
@@ -12,10 +15,39 @@
       "launchAutoHide": true,
       "backgroundColor": "#0f172a",
       "androidSplashResourceName": "splash",
-      "showSpinner": false
+      "iosSplashResourceName": "LaunchScreen",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": true
+    },
+    "StatusBar": {
+      "backgroundColor": "#0f172a",
+      "style": "LIGHT",
+      "overlaysWebView": false
+    },
+    "Keyboard": {
+      "resize": "body",
+      "resizeOnFullScreen": true
     },
     "PushNotifications": {
       "presentationOptions": ["badge", "sound", "alert"]
     }
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false,
+    "backgroundColor": "#0f172a",
+    "buildOptions": {
+      "keystorePath": "release-key.keystore",
+      "keystoreAlias": "rvlh-lms"
+    }
+  },
+  "ios": {
+    "contentInset": "always",
+    "allowsLinkPreview": true,
+    "scrollEnabled": true,
+    "backgroundColor": "#0f172a",
+    "scheme": "RVLH LMS"
   }
 }

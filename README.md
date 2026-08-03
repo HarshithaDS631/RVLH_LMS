@@ -10,25 +10,40 @@ Available as **Web App**, **Android App** (Google Play Store), and **iOS App** (
 ```
 Final LMS/
 ├── backend/                    # Node.js + Express API Server
+│   ├── config/                 # Database connection config
+│   ├── data/                   # In-memory data store
+│   ├── middleware/             # Auth middleware (JWT protect)
 │   ├── models/                 # Mongoose schemas (25 models)
-│   ├── test/                   # Automated integration tests
-│   ├── index.js                # Express server + all REST endpoints
+│   ├── routes/                 # 20 modular Express route files
+│   ├── seed/                   # Database seed data
+│   ├── test/                   # Automated integration tests (25 tests)
+│   ├── utils/                  # Utility modules (logger)
+│   ├── index.js                # Slim Express server entry (~70 lines)
 │   ├── package.json            # Backend dependencies
 │   └── .env.example            # Environment variable template
-├── web-app/                    # Vite + Vanilla JS Frontend SPA
-│   ├── public/                 # Static assets (icons, PWA manifest, policies)
-│   │   ├── icon-192.png        # App icon 192x192
-│   │   ├── icon-512.png        # App icon 512x512
-│   │   ├── manifest.webmanifest# PWA manifest
-│   │   ├── sw.js               # Service Worker
-│   │   ├── privacy-policy.html # Privacy Policy (store requirement)
-│   │   └── terms-of-service.html # Terms of Service (store requirement)
-│   ├── index.html              # Main HTML entry point
-│   ├── main.js                 # SPA application logic
-│   ├── style.css               # All CSS styles
-│   ├── capacitor.config.json   # Mobile app configuration
-│   ├── vite.config.js          # Vite build config
-│   └── package.json            # Frontend dependencies
+├── src/                        # Frontend modular source code
+│   ├── pages/                  # 52 individual page modules
+│   │   ├── student/            # 17 student & parent page modules
+│   │   ├── faculty/            # 11 faculty page modules
+│   │   ├── admin/              # 14 admin page modules
+│   │   ├── shared/             # 8 shared/cross-role page modules
+│   │   └── index.js            # Central page registry loader
+│   ├── services/               # API client & Service Worker
+│   ├── components/             # Reusable UI components (mobile nav)
+│   └── app.js                  # Main application entry point
+├── public/                     # Static assets (icons, PWA manifest, policies)
+│   ├── icon-192.png            # App icon 192x192
+│   ├── icon-512.png            # App icon 512x512
+│   ├── manifest.webmanifest    # PWA manifest
+│   ├── sw.js                   # Service Worker
+│   ├── privacy-policy.html     # Privacy Policy (store requirement)
+│   └── terms-of-service.html   # Terms of Service (store requirement)
+├── index.html                  # Main HTML entry point
+├── main.js                     # SPA application logic
+├── style.css                   # All CSS styles
+├── capacitor.config.json       # Mobile app configuration
+├── vite.config.js              # Vite build config
+├── package.json                # Root dependencies (Vite)
 ├── .github/workflows/          # CI/CD Pipeline
 │   └── ci-cd.yml               # GitHub Actions (build-and-test)
 ├── vercel.json                 # Vercel deployment config
@@ -62,8 +77,7 @@ npm run dev                  # Start dev server (port 5000)
 ### 3. Frontend Setup
 
 ```bash
-cd web-app
-npm install                  # Install dependencies
+npm install                  # Install dependencies (from project root)
 npm run dev                  # Start Vite dev server (port 3000)
 ```
 
@@ -84,8 +98,7 @@ Visit **http://localhost:3000** — the frontend proxies API calls to backend au
 ## 🧪 Running Tests
 
 ```bash
-cd backend
-npm test        # Runs 25 automated integration tests
+npm test        # Runs 25 automated integration tests (from project root)
 ```
 
 ---
@@ -95,11 +108,10 @@ npm test        # Runs 25 automated integration tests
 ### Android (Play Store)
 
 ```bash
-cd web-app
 npm run build                    # Build production assets
 npx cap add android              # Add Android platform
-npx cap sync android              # Sync web assets to Android
-npx cap open android              # Open in Android Studio
+npx cap sync android             # Sync web assets to Android
+npx cap open android             # Open in Android Studio
 ```
 
 Then in Android Studio: **Build → Generate Signed Bundle / APK**
@@ -107,7 +119,6 @@ Then in Android Studio: **Build → Generate Signed Bundle / APK**
 ### iOS (App Store)
 
 ```bash
-cd web-app
 npm run build                    # Build production assets
 npx cap add ios                  # Add iOS platform
 npx cap sync ios                 # Sync web assets to iOS

@@ -245,29 +245,25 @@ var _at = String.fromCharCode(64);
 var EM = {
   student : 'arjun'  + _at + 'rvhub.com',
   faculty : 'priya'  + _at + 'rvhub.com',
-  admin   : 'admin'  + _at + 'rvhub.com',
-  parent  : 'parent' + _at + 'rvhub.com'
+  admin   : 'admin'  + _at + 'rvhub.com'
 };
 
 var USERS = {
   student: { name:'Arjun Sharma',    email:EM.student, ava:'S', batch:'JEE Advanced 2025', roll:'RV2024001' },
   faculty: { name:'Dr. Priya Mehta', email:EM.faculty, ava:'F', subject:'Physics',          emp:'RVF001'    },
-  admin  : { name:'Rahul Verma', firstName:'Rahul', lastName:'Verma', email:EM.admin, ava:'A', dept:'Administration', emp:'RVADM01', employeeId:'ADM-001', designation:'System Administrator', department:'Administration', campus:'RV Learning Hub HQ', phone:'', gender:'', dob:'', joinDate:'' },
-  parent : { name:'Suresh Sharma',   email:EM.parent,  ava:'P', dept:'Parent Portal', campus:'RV Jayanagar' }
+  admin  : { name:'Rahul Verma', firstName:'Rahul', lastName:'Verma', email:EM.admin, ava:'A', dept:'Administration', emp:'RVADM01', employeeId:'ADM-001', designation:'System Administrator', department:'Administration', campus:'RV Learning Hub HQ', phone:'', gender:'', dob:'', joinDate:'' }
 };
 
 var CREDS = {};
 CREDS[EM.student]   = { role:'student', pass:'student123' };
 CREDS[EM.faculty]   = { role:'faculty', pass:'faculty123' };
 CREDS[EM.admin]     = { role:'admin',   pass:'admin123'   };
-CREDS[EM.parent]    = { role:'parent',  pass:'parent123'  };
 CREDS['9876543210'] = { role:'student', pass:'student123' };
 CREDS['9876543211'] = { role:'faculty', pass:'faculty123' };
 CREDS['9876543212'] = { role:'admin',   pass:'admin123'   };
 CREDS['arjun']      = { role:'student', pass:'student123' };
 CREDS['priya']      = { role:'faculty', pass:'faculty123' };
 CREDS['admin']      = { role:'admin',   pass:'admin123'   };
-CREDS['parent']     = { role:'parent',  pass:'parent123'  };
 CREDS['student']    = { role:'student', pass:'student123' };
 CREDS['faculty']    = { role:'faculty', pass:'faculty123' };
 
@@ -285,12 +281,12 @@ function hideErr() {
 
 function selectRole(role) {
   G.role = role;
-  var roles = ['student','faculty','admin','parent'];
+  var roles = ['student','faculty','admin'];
   for (var i=0; i<roles.length; i++) {
     var card = document.getElementById('rc-' + roles[i]);
     if (card) card.classList.toggle('active', roles[i] === role);
   }
-  var passes = { student:'student123', faculty:'faculty123', admin:'admin123', parent:'parent123' };
+  var passes = { student:'student123', faculty:'faculty123', admin:'admin123' };
   var eEl = document.getElementById('li-email');
   var pEl = document.getElementById('li-pass');
   if (eEl) eEl.value = EM[role];
@@ -597,19 +593,6 @@ var NAV = {
     { sec:'System', items:[
       { id:'profile',  icon:'👤', label:'My Profile' },
       { id:'settings', icon:'⚙️', label:'System Settings' },
-    ]},
-  ],
-  parent: [
-    { sec:'Edchemy Suite', items:[
-      { id:'dashboard',          icon:'🏠', label:'Child Dashboard' },
-      { id:'marks',              icon:'📜', label:'Term Report Card' },
-      { id:'leaves',             icon:'📝', label:'Leave Requests' },
-      { id:'sibling_admission',  icon:'👨‍👩‍👧', label:'Sibling Admission' },
-      { id:'calendar',           icon:'📅', label:'School Calendar' },
-      { id:'fees',               icon:'💳', label:'Fee Receipts' },
-    ]},
-    { sec:'Account', items:[
-      { id:'profile',            icon:'👤', label:'Parent Profile' },
     ]}
   ]
 };

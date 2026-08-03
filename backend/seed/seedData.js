@@ -75,23 +75,6 @@ async function seedData() {
     st: 'active'
   });
 
-  const parentHash = await bcrypt.hash('parent123', salt);
-  users.push({
-    _id: 'p1',
-    name: 'Suresh Sharma',
-    email: 'parent@rvhub.com',
-    phone: '9876500000',
-    password: parentHash,
-    role: 'parent',
-    ava: 'P',
-    children: [
-      { name: 'Arjun Sharma', roll: 'RV2024001', batch: 'JEE Advanced (Main + KCET Decoded)', campus: 'RV Jayanagar' },
-      { name: 'Sneha Patel', roll: 'RV2024002', batch: 'JEE Advanced (Main + KCET Decoded)', campus: 'RV Rajajinagar' }
-    ],
-    campus: 'RV Jayanagar',
-    st: 'active'
-  });
-
   studentSeeds.forEach((s, i) => {
     users.push({
       _id: 's' + (i + 1),
